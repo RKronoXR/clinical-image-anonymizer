@@ -1,0 +1,15 @@
+services:
+
+  anonymizer:
+
+    build: .
+
+    ports:
+      - "${GRADIO_SERVER_PORT:-7860}:7860"
+
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+
+    env_file:
+      - .env

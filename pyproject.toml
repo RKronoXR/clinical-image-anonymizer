@@ -1,0 +1,20 @@
+[project]
+name = "clinical-image-anonymizer"
+version = "0.1.0"
+description = "Local-first clinical image anonymization tool."
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "gradio",
+    "opencv-python",
+    "numpy",
+    "pillow",
+    "tifffile",
+    "piexif",
+    "pydantic",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
