@@ -1,9 +1,10 @@
 """Reusable file-system utilities."""
 
-from src.common.exceptions import FileOperationError
 from __future__ import annotations
 
 from pathlib import Path
+
+from src.common.exceptions import FileOperationError
 
 SUPPORTED_IMAGE_EXTENSIONS = {
     ".png",
