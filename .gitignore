@@ -1,0 +1,14 @@
+data/
+outputs/
+runs/
+.venv/
+__pycache__/
+*.pyc
+.env
+*.log
+*.pt
+*.pth
+*.onnx
+*.ckpt
+.DS_Store
+Thumbs.db
