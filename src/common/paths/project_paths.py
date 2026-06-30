@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from src.common.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 class ProjectPaths:
     """Centralized access to project directories."""
@@ -22,6 +26,8 @@ class ProjectPaths:
 
     def create_directories(self) -> None:
         """Create required project directories if missing."""
+
+        logger.info("Creating project directories...")
 
         for directory in (
             self.configs,

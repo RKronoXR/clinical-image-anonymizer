@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import logging
 
+from src.common.config import load_settings
+
+settings = load_settings()
+
 
 def get_logger(name: str) -> logging.Logger:
     """Return a configured logger."""
@@ -13,7 +17,9 @@ def get_logger(name: str) -> logging.Logger:
     if logger.handlers:
         return logger
 
-    logger.setLevel(logging.INFO)
+    logger.setLevel(
+        getattr(logging, settings.log_level.upper(), logging.INFO)
+    )
 
     formatter = logging.Formatter(
         "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
