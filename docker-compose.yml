@@ -1,15 +1,16 @@
 services:
-
-  anonymizer:
-
+  clinical-image-anonymizer:
     build: .
+    container_name: clinical-image-anonymizer
 
     ports:
-      - "${GRADIO_SERVER_PORT:-7860}:7860"
+      - "${GRADIO_PORT:-7860}:7860"
 
     volumes:
       - ./data:/app/data
       - ./outputs:/app/outputs
+      - ./runs:/app/runs
 
-    env_file:
-      - .env
+    environment:
+      GRADIO_HOST: 0.0.0.0
+      GRADIO_PORT: 7860
