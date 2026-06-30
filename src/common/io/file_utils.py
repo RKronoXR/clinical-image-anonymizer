@@ -1,5 +1,6 @@
 """Reusable file-system utilities."""
 
+from src.common.exceptions import FileOperationError
 from __future__ import annotations
 
 from pathlib import Path
@@ -38,5 +39,5 @@ def list_images(directory: Path) -> list[Path]:
 def ensure_file_exists(path: Path) -> Path:
     """Validate that a file exists."""
     if not path.exists():
-        raise FileNotFoundError(path)
+        raise FileOperationError(f"File not found: {path}")
     return path
