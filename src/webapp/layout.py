@@ -281,6 +281,31 @@ def build_main_layout():
     batch_index_state = gr.State(0)
 
     with gr.Group(visible=False) as viewer_group:
+        with gr.Row(equal_height=True):
+            export_output_folder = gr.Textbox(
+                label="Output folder",
+                value="outputs/anonymized",
+                interactive=True,
+                scale=4,
+            )
+
+            export_name_prefix = gr.Textbox(
+                label="Output filename prefix",
+                value="Anonymized_",
+                interactive=True,
+                scale=2,
+            )
+
+            export_randomize_order = gr.Checkbox(
+                label="Randomize output image order",
+                value=False,
+                scale=2,
+            )
+
+            export_button = gr.Button(
+                value="Export anonymized images",
+                scale=2,
+            )
         with gr.Row():
             with gr.Column(scale=3, min_width=720):
                 with gr.Tabs(selected="original") as image_tabs:
@@ -385,31 +410,6 @@ def build_main_layout():
                     language="json",
                     interactive=False,
                     value="[]",
-                )
-
-                export_output_folder = gr.Textbox(
-                    label="Output folder",
-                    value="outputs/anonymized",
-                    interactive=True,
-                )
-
-                export_name_prefix = gr.Textbox(
-                    label="Output filename prefix",
-                    value="Anonymized_",
-                    interactive=True,
-                )
-
-                export_randomize_order = gr.Checkbox(
-                    label="Randomize output image order",
-                    value=False,
-                )
-
-                export_button = gr.Button(value="Export anonymized images")
-
-                export_status = gr.Textbox(
-                    label="Export status",
-                    value="Export UI ready. Export logic will be implemented later.",
-                    interactive=False,
                 )
 
     current_metadata_html = gr.HTML(
@@ -683,5 +683,4 @@ def build_main_layout():
         "export_name_prefix": export_name_prefix,
         "export_randomize_order": export_randomize_order,
         "export_button": export_button,
-        "export_status": export_status,
     }
