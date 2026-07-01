@@ -3,7 +3,6 @@ from __future__ import annotations
 import gradio as gr
 
 from src.webapp.callbacks import (
-    get_uploaded_file_path,
     get_uploaded_file_paths,
     inspect_uploaded_batch,
 )
@@ -46,7 +45,19 @@ def get_current_batch_path(files, index: int | float | None) -> str | None:
 def batch_status(files, index: int | float | None) -> str:
     file_paths = get_uploaded_file_paths(files)
     if not file_paths:
-        return "No images loaded."
+        return """
+        <div style="
+            height:42px;
+            background:#5a5a66;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:600;
+            border-radius:4px;
+        ">
+            No images loaded.
+        </div>
+        """
 
     safe_index = max(0, min(int(index or 0), len(file_paths) - 1))
     return f"""
@@ -251,7 +262,7 @@ def build_main_layout():
 
     with gr.Group(visible=False) as workspace_group:
         with gr.Row():
-            with gr.Column(scale=5):
+            with gr.Column(scale=3, min_width=720):
                 with gr.Tabs(selected="original") as image_tabs:
                     with gr.Tab("Original", id="original"):
                         original_preview = gr.Image(
@@ -278,12 +289,12 @@ def build_main_layout():
                     first_button = gr.Button(value="First")
                     previous_button = gr.Button(value="Previous")
                     batch_position = gr.Markdown(
-                        value="<div style='text-align:center; font-weight:600;'>No images loaded.</div>"
+                        value=batch_status(None, None)
                     )
                     next_button = gr.Button(value="Next")
                     last_button = gr.Button(value="Last")
 
-            with gr.Column(scale=1):
+            with gr.Column(scale=1, min_width=360):
                 add_rectangle_button = gr.Button(value="Add rectangle")
 
                 rectangle_selector = gr.Dropdown(
