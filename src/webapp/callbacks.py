@@ -5,9 +5,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-from PIL import Image, ImageOps
-
 from src.anonymization.metadata import inspect_image_metadata
+from src.webapp.preview_rendering import (
+    load_preview_image,
+    render_censored_preview,
+    render_overlay_preview,
+)
 
 
 def get_uploaded_file_path(file: Any) -> str | None:
@@ -41,13 +44,17 @@ def get_uploaded_file_paths(files: Any) -> list[str]:
 
 def preview_uploaded_image(file: Any):
     file_path = get_uploaded_file_path(file)
-    if file_path is None:
-        return None
+    return load_preview_image(file_path)
 
-    with Image.open(file_path) as image:
-        image = ImageOps.exif_transpose(image)
-        image.load()
-        return image.convert("RGB")
+
+def preview_all_single_views(file: Any, rectangles: list[dict] | None):
+    file_path = get_uploaded_file_path(file)
+
+    return (
+        load_preview_image(file_path),
+        render_overlay_preview(file_path, rectangles),
+        render_censored_preview(file_path, rectangles),
+    )
 
 
 def inspect_uploaded_image(file: Any) -> str:
