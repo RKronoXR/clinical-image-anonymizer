@@ -7,7 +7,10 @@ from src.webapp.callbacks import (
     inspect_uploaded_image,
     preview_all_single_views,
 )
-from src.webapp.rectangle_interaction import handle_image_rectangle_draw
+from src.webapp.rectangle_canvas import (
+    render_rectangle_canvas,
+    sync_canvas_rectangles,
+)
 from src.webapp.rectangle_state import (
     add_rectangle,
     format_rectangles,
@@ -41,6 +44,7 @@ def handle_add_rectangle(rectangles, file):
     choices = rectangle_choices(updated)
     selected = choices[-1] if choices else None
     original, overlay, anonymized = preview_all_single_views(file, updated)
+    canvas_html = render_rectangle_canvas(file, updated)
 
     return (
         updated,
@@ -49,6 +53,7 @@ def handle_add_rectangle(rectangles, file):
         original,
         overlay,
         anonymized,
+        canvas_html,
     )
 
 
@@ -56,6 +61,7 @@ def handle_update_rectangle(rectangles, label, x, y, width, height, file):
     index = selected_rectangle_index(label)
     updated = update_rectangle(rectangles, index, x, y, width, height)
     original, overlay, anonymized = preview_all_single_views(file, updated)
+    canvas_html = render_rectangle_canvas(file, updated)
 
     return (
         updated,
@@ -63,6 +69,30 @@ def handle_update_rectangle(rectangles, label, x, y, width, height, file):
         original,
         overlay,
         anonymized,
+        canvas_html,
+    )
+
+
+def handle_canvas_payload(payload, rectangles, file):
+    updated, rectangles_json = sync_canvas_rectangles(payload, rectangles)
+    choices = rectangle_choices(updated)
+    selected = choices[-1] if choices else None
+
+    original, overlay, anonymized = preview_all_single_views(file, updated)
+    latest = updated[-1] if updated else {"x": 0, "y": 0, "width": 100, "height": 100}
+
+    return (
+        updated,
+        gr.update(choices=choices, value=selected),
+        latest["x"],
+        latest["y"],
+        latest["width"],
+        latest["height"],
+        rectangles_json,
+        original,
+        overlay,
+        anonymized,
+        render_rectangle_canvas(file, updated),
     )
 
 
@@ -94,10 +124,15 @@ def build_main_layout():
                     height=420,
                 )
 
+            with gr.Tab("Draw Rectangles"):
+                rectangle_canvas = gr.HTML(
+                    label="Interactive rectangle editor",
+                )
+
             with gr.Tab("Overlay"):
                 overlay_preview = gr.Image(
-                    label="Draw or inspect rectangles here",
-                    interactive=True,
+                    label="Rectangle overlay preview",
+                    interactive=False,
                     height=420,
                 )
 
@@ -132,6 +167,12 @@ def build_main_layout():
 
     rectangle_state = gr.State([])
 
+    rectangle_canvas_payload = gr.Textbox(
+        label="Rectangle canvas payload",
+        elem_id="rectangle_canvas_payload",
+        visible=False,
+    )
+
     add_rectangle_button = gr.Button(value="Add rectangle")
 
     rectangle_selector = gr.Dropdown(
@@ -162,6 +203,12 @@ def build_main_layout():
         fn=preview_all_single_views,
         inputs=[single_file, rectangle_state],
         outputs=[original_preview, overlay_preview, anonymized_preview],
+    )
+
+    single_file.change(
+        fn=render_rectangle_canvas,
+        inputs=[single_file, rectangle_state],
+        outputs=rectangle_canvas,
     )
 
     single_file.change(
@@ -203,12 +250,13 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            rectangle_canvas,
         ],
     )
 
-    overlay_preview.select(
-        fn=handle_image_rectangle_draw,
-        inputs=[rectangle_state, single_file],
+    rectangle_canvas_payload.change(
+        fn=handle_canvas_payload,
+        inputs=[rectangle_canvas_payload, rectangle_state, single_file],
         outputs=[
             rectangle_state,
             rectangle_selector,
@@ -220,6 +268,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            rectangle_canvas,
         ],
     )
 
@@ -246,6 +295,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            rectangle_canvas,
         ],
     )
 
@@ -254,6 +304,7 @@ def build_main_layout():
         "processing_mode": processing_mode,
         "single_file": single_file,
         "original_preview": original_preview,
+        "rectangle_canvas": rectangle_canvas,
         "overlay_preview": overlay_preview,
         "anonymized_preview": anonymized_preview,
         "batch_files": batch_files,
@@ -261,6 +312,7 @@ def build_main_layout():
         "single_metadata_box": single_metadata_box,
         "batch_metadata_html": batch_metadata_html,
         "rectangle_state": rectangle_state,
+        "rectangle_canvas_payload": rectangle_canvas_payload,
         "add_rectangle_button": add_rectangle_button,
         "rectangle_selector": rectangle_selector,
         "x_input": x_input,
