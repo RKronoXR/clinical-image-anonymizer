@@ -69,6 +69,32 @@ def inspect_uploaded_image(file: Any) -> str:
         return json.dumps({"error": str(exc)}, indent=4, ensure_ascii=False)
 
 
+def inspect_current_uploaded_image_html(
+    files: Any,
+    index: int | float | None,
+) -> str:
+    file_paths = get_uploaded_file_paths(files)
+    if not file_paths:
+        return "<p>No image loaded.</p>"
+
+    safe_index = max(0, min(int(index or 0), len(file_paths) - 1))
+    file_path = file_paths[safe_index]
+    file_name = Path(file_path).name
+
+    try:
+        metadata = inspect_image_metadata(Path(file_path))
+        content = json.dumps(metadata, indent=4, ensure_ascii=False, default=str)
+    except Exception as exc:
+        content = json.dumps({"error": str(exc)}, indent=4, ensure_ascii=False)
+
+    return f"""
+    <details open>
+        <summary><strong>Current image metadata: {html.escape(file_name)}</strong></summary>
+        <pre>{html.escape(content)}</pre>
+    </details>
+    """
+
+
 def inspect_uploaded_batch(files: Any) -> str:
     file_paths = get_uploaded_file_paths(files)
     if not file_paths:

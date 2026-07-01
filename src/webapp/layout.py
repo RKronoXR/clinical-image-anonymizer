@@ -4,7 +4,7 @@ import gradio as gr
 
 from src.webapp.callbacks import (
     get_uploaded_file_paths,
-    inspect_uploaded_batch,
+    inspect_current_uploaded_image_html,
 )
 from src.webapp.preview_rendering import (
     render_censored_preview,
@@ -21,16 +21,6 @@ from src.webapp.rectangle_state import (
     selected_rectangle_index,
     update_rectangle,
 )
-
-
-def summarize_batch_files(files) -> str:
-    file_paths = get_uploaded_file_paths(files)
-    if not file_paths:
-        return "No images loaded."
-
-    lines = [f"Loaded images: {len(file_paths)}"]
-    lines.extend(f"{index}. {path}" for index, path in enumerate(file_paths, start=1))
-    return "\n".join(lines)
 
 
 def get_current_batch_path(files, index: int | float | None) -> str | None:
@@ -128,6 +118,7 @@ def handle_batch_upload(files, show_grid, grid_size, grid_label_size):
         rectangles,
         index,
         gr.update(visible=has_files),
+        gr.update(visible=has_files),
         gr.update(choices=[], value=None),
         0,
         0,
@@ -137,13 +128,20 @@ def handle_batch_upload(files, show_grid, grid_size, grid_label_size):
         original,
         overlay,
         anonymized,
-        summarize_batch_files(files),
-        inspect_uploaded_batch(files),
+        inspect_current_uploaded_image_html(files, index),
         batch_status(files, index),
     )
 
 
-def navigate_batch(files, current_index, direction, rectangles, show_grid, grid_size, grid_label_size):
+def navigate_batch(
+    files,
+    current_index,
+    direction,
+    rectangles,
+    show_grid,
+    grid_size,
+    grid_label_size,
+):
     file_paths = get_uploaded_file_paths(files)
     if not file_paths:
         index = 0
@@ -176,6 +174,7 @@ def navigate_batch(files, current_index, direction, rectangles, show_grid, grid_
         original,
         overlay,
         anonymized,
+        inspect_current_uploaded_image_html(files, index),
         batch_status(files, index),
     )
 
@@ -255,12 +254,7 @@ def build_main_layout():
     rectangle_state = gr.State([])
     batch_index_state = gr.State(0)
 
-    batch_files = gr.Files(
-        label="Upload images",
-        file_types=["image"],
-    )
-
-    with gr.Group(visible=False) as workspace_group:
+    with gr.Group(visible=False) as viewer_group:
         with gr.Row():
             with gr.Column(scale=3, min_width=720):
                 with gr.Tabs(selected="original") as image_tabs:
@@ -288,9 +282,7 @@ def build_main_layout():
                 with gr.Row():
                     first_button = gr.Button(value="First")
                     previous_button = gr.Button(value="Previous")
-                    batch_position = gr.Markdown(
-                        value=batch_status(None, None)
-                    )
+                    batch_position = gr.Markdown(value=batch_status(None, None))
                     next_button = gr.Button(value="Next")
                     last_button = gr.Button(value="Last")
 
@@ -367,23 +359,29 @@ def build_main_layout():
                     interactive=False,
                     value="[]",
                 )
+    current_metadata_html = gr.HTML(
+        label="Current image metadata",
+        visible=False,
+    )
 
-        batch_summary = gr.Textbox(
-            label="Loaded image list",
-            interactive=False,
-            lines=6,
-            value="No images loaded.",
-        )
-
-        batch_metadata_html = gr.HTML(label="Batch metadata")
-
+    batch_files = gr.Files(
+        label="Upload images",
+        file_types=["image"],
+    )
+    
     batch_files.change(
         fn=handle_batch_upload,
-        inputs=[batch_files, show_grid_checkbox, grid_size_input, grid_label_size_input],
+        inputs=[
+            batch_files,
+            show_grid_checkbox,
+            grid_size_input,
+            grid_label_size_input,
+        ],
         outputs=[
             rectangle_state,
             batch_index_state,
-            workspace_group,
+            viewer_group,
+            current_metadata_html,
             rectangle_selector,
             x_input,
             y_input,
@@ -393,8 +391,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
-            batch_summary,
-            batch_metadata_html,
+            current_metadata_html,
             batch_position,
         ],
     )
@@ -416,6 +413,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            current_metadata_html,
             batch_position,
         ],
     )
@@ -437,6 +435,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            current_metadata_html,
             batch_position,
         ],
     )
@@ -458,6 +457,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            current_metadata_html,
             batch_position,
         ],
     )
@@ -479,6 +479,7 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
+            current_metadata_html,
             batch_position,
         ],
     )
@@ -579,14 +580,13 @@ def build_main_layout():
 
     return {
         "batch_files": batch_files,
-        "workspace_group": workspace_group,
+        "viewer_group": viewer_group,
         "batch_index_state": batch_index_state,
         "original_preview": original_preview,
         "overlay_preview": overlay_preview,
         "anonymized_preview": anonymized_preview,
         "batch_position": batch_position,
-        "batch_summary": batch_summary,
-        "batch_metadata_html": batch_metadata_html,
+        "current_metadata_html": current_metadata_html,
         "rectangle_state": rectangle_state,
         "add_rectangle_button": add_rectangle_button,
         "rectangle_selector": rectangle_selector,
