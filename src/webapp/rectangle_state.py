@@ -10,7 +10,6 @@ DEFAULT_RECTANGLE_HEIGHT = 50
 
 @dataclass(frozen=True)
 class RectangleRegion:
-    image_path: str
     x: int
     y: int
     width: int
@@ -18,14 +17,12 @@ class RectangleRegion:
 
 
 def create_rectangle(
-    image_path: str = "",
     x: int = 0,
     y: int = 0,
     width: int = DEFAULT_RECTANGLE_WIDTH,
     height: int = DEFAULT_RECTANGLE_HEIGHT,
 ) -> dict:
     rectangle = RectangleRegion(
-        image_path=str(image_path or ""),
         x=max(0, int(x)),
         y=max(0, int(y)),
         width=max(1, int(width)),
@@ -34,12 +31,9 @@ def create_rectangle(
     return asdict(rectangle)
 
 
-def add_rectangle(
-    rectangles: list[dict] | None,
-    image_path: str = "",
-) -> list[dict]:
+def add_rectangle(rectangles: list[dict] | None) -> list[dict]:
     current = rectangles or []
-    return [*current, create_rectangle(image_path=image_path)]
+    return [*current, create_rectangle()]
 
 
 def update_rectangle(
@@ -55,11 +49,8 @@ def update_rectangle(
     if index is None or index < 0 or index >= len(current):
         return current
 
-    image_path = str(current[index].get("image_path", ""))
-
     updated = list(current)
     updated[index] = create_rectangle(
-        image_path=image_path,
         x=x,
         y=y,
         width=width,

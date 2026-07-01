@@ -15,6 +15,7 @@ from src.webapp.rectangle_state import (
     DEFAULT_RECTANGLE_HEIGHT,
     DEFAULT_RECTANGLE_WIDTH,
     add_rectangle,
+    delete_rectangle,
     format_rectangles,
     get_rectangle_values,
     rectangle_choices,
@@ -65,17 +66,6 @@ def batch_status(files, index: int | float | None) -> str:
     """
 
 
-def rectangles_for_current_image(rectangles, current_path: str | None) -> list[dict]:
-    if current_path is None:
-        return []
-
-    return [
-        rectangle
-        for rectangle in rectangles or []
-        if rectangle.get("image_path", current_path) == current_path
-    ]
-
-
 def preview_current_batch_image(
     files,
     index,
@@ -85,18 +75,17 @@ def preview_current_batch_image(
     grid_label_size,
 ):
     file_path = get_current_batch_path(files, index)
-    visible_rectangles = rectangles_for_current_image(rectangles, file_path)
 
     return (
         render_original_preview(file_path),
         render_overlay_preview(
             file_path=file_path,
-            rectangles=visible_rectangles,
+            rectangles=rectangles,
             show_grid=show_grid,
             grid_size=grid_size,
             grid_label_size=grid_label_size,
         ),
-        render_censored_preview(file_path, visible_rectangles),
+        render_censored_preview(file_path, rectangles),
     )
 
 
@@ -180,8 +169,7 @@ def navigate_batch(
 
 
 def handle_add_rectangle(rectangles, files, index, show_grid, grid_size, grid_label_size):
-    image_path = get_current_batch_path(files, index) or ""
-    updated = add_rectangle(rectangles, image_path=image_path)
+    updated = add_rectangle(rectangles)
     choices = rectangle_choices(updated)
     selected = choices[-1] if choices else None
 
@@ -232,6 +220,44 @@ def handle_update_rectangle(
 
     return (
         updated,
+        format_rectangles(updated),
+        original,
+        overlay,
+        anonymized,
+    )
+
+
+def handle_delete_rectangle(
+    rectangles,
+    label,
+    files,
+    index,
+    show_grid,
+    grid_size,
+    grid_label_size,
+):
+    rectangle_index = selected_rectangle_index(label)
+    updated = delete_rectangle(rectangles, rectangle_index)
+    choices = rectangle_choices(updated)
+    selected = choices[min(rectangle_index or 0, len(choices) - 1)] if choices else None
+    x, y, width, height = get_rectangle_values(updated, selected)
+
+    original, overlay, anonymized = preview_current_batch_image(
+        files,
+        index,
+        updated,
+        show_grid,
+        grid_size,
+        grid_label_size,
+    )
+
+    return (
+        updated,
+        gr.update(choices=choices, value=selected),
+        x,
+        y,
+        width,
+        height,
         format_rectangles(updated),
         original,
         overlay,
@@ -352,6 +378,7 @@ def build_main_layout():
                     )
 
                 update_rectangle_button = gr.Button(value="Update selected rectangle")
+                delete_rectangle_button = gr.Button(value="Delete selected rectangle")
 
                 rectangles_json = gr.Code(
                     label="Rectangle coordinates",
@@ -359,6 +386,32 @@ def build_main_layout():
                     interactive=False,
                     value="[]",
                 )
+
+                export_output_folder = gr.Textbox(
+                    label="Output folder",
+                    value="outputs/anonymized",
+                    interactive=True,
+                )
+
+                export_name_prefix = gr.Textbox(
+                    label="Output filename prefix",
+                    value="Anonymized_",
+                    interactive=True,
+                )
+
+                export_randomize_order = gr.Checkbox(
+                    label="Randomize output image order",
+                    value=False,
+                )
+
+                export_button = gr.Button(value="Export anonymized images")
+
+                export_status = gr.Textbox(
+                    label="Export status",
+                    value="Export UI ready. Export logic will be implemented later.",
+                    interactive=False,
+                )
+
     current_metadata_html = gr.HTML(
         label="Current image metadata",
         visible=False,
@@ -369,7 +422,7 @@ def build_main_layout():
             label="Batch image files",
             file_types=["image"],
         )
-    
+
     batch_files.change(
         fn=handle_batch_upload,
         inputs=[
@@ -579,6 +632,31 @@ def build_main_layout():
         ],
     )
 
+    delete_rectangle_button.click(
+        fn=handle_delete_rectangle,
+        inputs=[
+            rectangle_state,
+            rectangle_selector,
+            batch_files,
+            batch_index_state,
+            show_grid_checkbox,
+            grid_size_input,
+            grid_label_size_input,
+        ],
+        outputs=[
+            rectangle_state,
+            rectangle_selector,
+            x_input,
+            y_input,
+            width_input,
+            height_input,
+            rectangles_json,
+            original_preview,
+            overlay_preview,
+            anonymized_preview,
+        ],
+    )
+
     return {
         "batch_files": batch_files,
         "viewer_group": viewer_group,
@@ -590,6 +668,7 @@ def build_main_layout():
         "current_metadata_html": current_metadata_html,
         "rectangle_state": rectangle_state,
         "add_rectangle_button": add_rectangle_button,
+        "delete_rectangle_button": delete_rectangle_button,
         "rectangle_selector": rectangle_selector,
         "x_input": x_input,
         "y_input": y_input,
@@ -600,4 +679,9 @@ def build_main_layout():
         "grid_size_input": grid_size_input,
         "grid_label_size_input": grid_label_size_input,
         "rectangles_json": rectangles_json,
+        "export_output_folder": export_output_folder,
+        "export_name_prefix": export_name_prefix,
+        "export_randomize_order": export_randomize_order,
+        "export_button": export_button,
+        "export_status": export_status,
     }
