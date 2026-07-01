@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from src.anonymization.metadata import inspect_image_metadata
+from src.anonymization.metadata import (
+    inspect_image_metadata,
+    preview_anonymized_metadata,
+)
 from src.webapp.preview_rendering import (
     load_preview_image,
     render_censored_preview,
@@ -69,6 +72,16 @@ def inspect_uploaded_image(file: Any) -> str:
         return json.dumps({"error": str(exc)}, indent=4, ensure_ascii=False)
 
 
+def _format_metadata_block(title: str, metadata: dict[str, str]) -> str:
+    content = json.dumps(metadata, indent=4, ensure_ascii=False, default=str)
+    return f"""
+    <div style="width:50%; padding:8px;">
+        <h4>{html.escape(title)}</h4>
+        <pre style="white-space:pre-wrap;">{html.escape(content)}</pre>
+    </div>
+    """
+
+
 def inspect_current_uploaded_image_html(
     files: Any,
     index: int | float | None,
@@ -82,16 +95,21 @@ def inspect_current_uploaded_image_html(
     file_name = Path(file_path).name
 
     try:
-        metadata = inspect_image_metadata(Path(file_path))
-        content = json.dumps(metadata, indent=4, ensure_ascii=False, default=str)
+        original_metadata = inspect_image_metadata(Path(file_path))
     except Exception as exc:
-        content = json.dumps({"error": str(exc)}, indent=4, ensure_ascii=False)
+        original_metadata = {"error": str(exc)}
+
+    try:
+        anonymized_metadata = preview_anonymized_metadata(Path(file_path))
+    except Exception as exc:
+        anonymized_metadata = {"error": str(exc)}
 
     return f"""
-    <details open>
-        <summary><strong>Current image metadata: {html.escape(file_name)}</strong></summary>
-        <pre>{html.escape(content)}</pre>
-    </details>
+    <h3>Metadata: {html.escape(file_name)}</h3>
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+        {_format_metadata_block("Original Metadata", original_metadata)}
+        {_format_metadata_block("Anonymized Metadata", anonymized_metadata)}
+    </div>
     """
 
 

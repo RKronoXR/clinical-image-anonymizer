@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from PIL import Image
 
 
@@ -24,6 +25,22 @@ def inspect_image_metadata(image_path: str | Path) -> dict[str, str]:
             metadata[f"exif:{key}"] = str(value)
 
     return metadata
+
+
+def preview_anonymized_metadata(image_path: str | Path) -> dict[str, str]:
+    path = Path(image_path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"Image not found: {path}")
+
+    with Image.open(path) as image:
+        return {
+            "format": str(image.format),
+            "mode": str(image.mode),
+            "width": str(image.width),
+            "height": str(image.height),
+        }
+
 
 def remove_image_metadata(input_path: str | Path, output_path: str | Path) -> Path:
     source = Path(input_path)
