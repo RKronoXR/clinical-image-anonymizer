@@ -4,8 +4,13 @@ import json
 from dataclasses import asdict, dataclass
 
 
+DEFAULT_RECTANGLE_WIDTH = 50
+DEFAULT_RECTANGLE_HEIGHT = 50
+
+
 @dataclass(frozen=True)
 class RectangleRegion:
+    image_path: str
     x: int
     y: int
     width: int
@@ -13,12 +18,14 @@ class RectangleRegion:
 
 
 def create_rectangle(
+    image_path: str = "",
     x: int = 0,
     y: int = 0,
-    width: int = 100,
-    height: int = 100,
+    width: int = DEFAULT_RECTANGLE_WIDTH,
+    height: int = DEFAULT_RECTANGLE_HEIGHT,
 ) -> dict:
     rectangle = RectangleRegion(
+        image_path=str(image_path or ""),
         x=max(0, int(x)),
         y=max(0, int(y)),
         width=max(1, int(width)),
@@ -27,9 +34,12 @@ def create_rectangle(
     return asdict(rectangle)
 
 
-def add_rectangle(rectangles: list[dict] | None) -> list[dict]:
+def add_rectangle(
+    rectangles: list[dict] | None,
+    image_path: str = "",
+) -> list[dict]:
     current = rectangles or []
-    return [*current, create_rectangle()]
+    return [*current, create_rectangle(image_path=image_path)]
 
 
 def update_rectangle(
@@ -45,8 +55,16 @@ def update_rectangle(
     if index is None or index < 0 or index >= len(current):
         return current
 
+    image_path = str(current[index].get("image_path", ""))
+
     updated = list(current)
-    updated[index] = create_rectangle(x=x, y=y, width=width, height=height)
+    updated[index] = create_rectangle(
+        image_path=image_path,
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+    )
     return updated
 
 
@@ -82,7 +100,7 @@ def get_rectangle_values(
     index = selected_rectangle_index(label)
 
     if index is None or index < 0 or index >= len(current):
-        return 0, 0, 100, 100
+        return 0, 0, DEFAULT_RECTANGLE_WIDTH, DEFAULT_RECTANGLE_HEIGHT
 
     rectangle = current[index]
     return (
