@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import gradio as gr
 
+from src.webapp.callbacks import inspect_uploaded_image
+
 
 def summarize_batch_files(files) -> str:
     if not files:
@@ -36,7 +38,13 @@ def build_main_layout():
 
     batch_summary = gr.Textbox(
         label="Batch summary",
+        interactive=False,
         value="No batch files selected.",
+    )
+
+    metadata_box = gr.Code(
+        label="Metadata",
+        language="json",
         interactive=False,
     )
 
@@ -44,6 +52,12 @@ def build_main_layout():
         fn=lambda img: img,
         inputs=input_image,
         outputs=preview_image,
+    )
+
+    input_image.change(
+        fn=inspect_uploaded_image,
+        inputs=input_image,
+        outputs=metadata_box,
     )
 
     batch_files.change(
@@ -58,4 +72,5 @@ def build_main_layout():
         "preview_image": preview_image,
         "batch_files": batch_files,
         "batch_summary": batch_summary,
+        "metadata_box": metadata_box,
     }
