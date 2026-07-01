@@ -8,6 +8,7 @@ from src.webapp.callbacks import (
     preview_uploaded_image,
 )
 
+from src.webapp.rectangle_state import add_rectangle, format_rectangles
 
 def summarize_batch_files(files) -> str:
     if not files:
@@ -81,6 +82,28 @@ def build_main_layout():
         visible=False,
     )
 
+    rectangle_state = gr.State([])
+
+    add_rectangle_button = gr.Button(
+        value="Add rectangle",
+    )
+
+    rectangles_json = gr.Code(
+        label="Rectangle coordinates",
+        language="json",
+        interactive=False,
+        value="[]",
+    )
+
+    add_rectangle_button.click(
+        fn=lambda rectangles: (
+            add_rectangle(rectangles),
+            format_rectangles(add_rectangle(rectangles)),
+        ),
+        inputs=rectangle_state,
+        outputs=[rectangle_state, rectangles_json],
+    )
+
     single_file.change(
         fn=preview_uploaded_image,
         inputs=single_file,
@@ -127,4 +150,7 @@ def build_main_layout():
         "batch_summary": batch_summary,
         "single_metadata_box": single_metadata_box,
         "batch_metadata_html": batch_metadata_html,
+        "rectangle_state": rectangle_state,
+        "add_rectangle_button": add_rectangle_button,
+        "rectangles_json": rectangles_json,
     }
