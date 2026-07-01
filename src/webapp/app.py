@@ -22,6 +22,24 @@ def build_app() -> gr.Blocks:
                 value=False,
             )
 
+        with gr.Row():
+            input_image = gr.Image(
+                label="Input image",
+                type="pil",
+            )
+
+        with gr.Row():
+            preview_image = gr.Image(
+                label="Preview",
+                interactive=False,
+            )
+
+        input_image.change(
+            fn=lambda img: img,
+            inputs=input_image,
+            outputs=preview_image,
+        )
+
         gr.Markdown("Interface structure ready. Functional components will be added incrementally.")
 
     return demo
