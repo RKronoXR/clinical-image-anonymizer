@@ -295,6 +295,37 @@ def build_main_layout():
                     last_button = gr.Button(value="Last")
 
             with gr.Column(scale=1, min_width=360):
+                show_grid_checkbox = gr.Checkbox(
+                    label="Show pixel grid in Overlay",
+                    value=False,
+                )
+
+                with gr.Row(equal_height=True):
+                    gr.HTML("""
+                    <div style='height:56px; display:flex; align-items:center; justify-content:center; text-align:center; background:#1f1f23; border-radius:6px; font-weight:600; line-height:1.1;'>
+                        Grid square<br>size in pixels
+                    </div>
+                    """)
+                    grid_size_input = gr.Number(
+                        label="Grid square size in pixels",
+                        value=100,
+                        precision=0,
+                        show_label=False,
+                    )
+
+                with gr.Row(equal_height=True):
+                    gr.HTML("""
+                    <div style='height:56px; display:flex; align-items:center; justify-content:center; text-align:center; background:#1f1f23; border-radius:6px; font-weight:600; line-height:1.1;'>
+                        Grid number<br>size
+                    </div>
+                    """)
+                    grid_label_size_input = gr.Number(
+                        label="Grid number size",
+                        value=12,
+                        precision=0,
+                        show_label=False,
+                    )
+
                 add_rectangle_button = gr.Button(value="Add rectangle")
 
                 rectangle_selector = gr.Dropdown(
@@ -304,44 +335,31 @@ def build_main_layout():
                     interactive=True,
                 )
 
-                with gr.Row():
-                    with gr.Column(scale=1):
-                        x_input = gr.Number(label="X", value=0, precision=0)
-                    with gr.Column(scale=1):
-                        y_input = gr.Number(label="Y", value=0, precision=0)
+                with gr.Row(equal_height=True):
+                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>X</div>")
+                    x_input = gr.Number(label="X", value=0, precision=0, show_label=False)
 
-                with gr.Row():
-                    with gr.Column(scale=1):
-                        width_input = gr.Number(
-                            label="W",
-                            value=DEFAULT_RECTANGLE_WIDTH,
-                            precision=0,
-                        )
-                    with gr.Column(scale=1):
-                        height_input = gr.Number(
-                            label="H",
-                            value=DEFAULT_RECTANGLE_HEIGHT,
-                            precision=0,
-                        )
+                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>Y</div>")
+                    y_input = gr.Number(label="Y", value=0, precision=0, show_label=False)
+
+                with gr.Row(equal_height=True):
+                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>W</div>")
+                    width_input = gr.Number(
+                        label="W",
+                        value=DEFAULT_RECTANGLE_WIDTH,
+                        precision=0,
+                        show_label=False,
+                    )
+
+                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>H</div>")
+                    height_input = gr.Number(
+                        label="H",
+                        value=DEFAULT_RECTANGLE_HEIGHT,
+                        precision=0,
+                        show_label=False,
+                    )
 
                 update_rectangle_button = gr.Button(value="Update selected rectangle")
-
-                show_grid_checkbox = gr.Checkbox(
-                    label="Show pixel grid in Overlay",
-                    value=False,
-                )
-
-                grid_size_input = gr.Number(
-                    label="Grid square size in pixels",
-                    value=100,
-                    precision=0,
-                )
-
-                grid_label_size_input = gr.Number(
-                    label="Grid number size",
-                    value=12,
-                    precision=0,
-                )
 
                 rectangles_json = gr.Code(
                     label="Rectangle coordinates",
