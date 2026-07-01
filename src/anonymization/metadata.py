@@ -24,3 +24,19 @@ def inspect_image_metadata(image_path: str | Path) -> dict[str, str]:
             metadata[f"exif:{key}"] = str(value)
 
     return metadata
+
+def remove_image_metadata(input_path: str | Path, output_path: str | Path) -> Path:
+    source = Path(input_path)
+    destination = Path(output_path)
+
+    if not source.exists():
+        raise FileNotFoundError(f"Image not found: {source}")
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    with Image.open(source) as image:
+        clean_image = Image.new(image.mode, image.size)
+        clean_image.putdata(list(image.getdata()))
+        clean_image.save(destination, format=image.format)
+
+    return destination
