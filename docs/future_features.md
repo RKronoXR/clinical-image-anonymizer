@@ -37,3 +37,12 @@ Use this file for useful ideas that are intentionally outside the current milest
 - Possible implementation: add explicit tests for bit-depth preservation, multi-page TIFF handling, and no unintended pixel conversion.
 - Dependencies: tifffile, synthetic TIFF fixtures, validation tests.
 - Risks: silent data changes if image arrays are converted incorrectly.
+
+## Feature: GUI folder path batch input
+
+- Status: idea
+- Priority: medium
+- Reason: Some users may prefer entering a folder path instead of manually selecting many image files.
+- Possible implementation: Add a folder path textbox, a recursive search checkbox, and a reusable image-discovery helper that ignores non-image files and reports valid images found.
+- Dependencies: safe path validation, supported image extension list, clear UI warnings.
+- Risks: accidental processing of unintended nested private images if recursive mode is enabled without clear user confirmation.
