@@ -3,6 +3,13 @@ from __future__ import annotations
 import gradio as gr
 
 
+def summarize_batch_files(files) -> str:
+    if not files:
+        return "No batch files selected."
+
+    return f"Selected batch files: {len(files)}"
+
+
 def build_main_layout():
     with gr.Row():
         developer_mode = gr.Checkbox(
@@ -27,10 +34,22 @@ def build_main_layout():
             file_types=["image"],
         )
 
+    batch_summary = gr.Textbox(
+        label="Batch summary",
+        value="No batch files selected.",
+        interactive=False,
+    )
+
     input_image.change(
         fn=lambda img: img,
         inputs=input_image,
         outputs=preview_image,
+    )
+
+    batch_files.change(
+        fn=summarize_batch_files,
+        inputs=batch_files,
+        outputs=batch_summary,
     )
 
     return {
@@ -38,4 +57,5 @@ def build_main_layout():
         "input_image": input_image,
         "preview_image": preview_image,
         "batch_files": batch_files,
+        "batch_summary": batch_summary,
     }
