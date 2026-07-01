@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass
 
 
@@ -31,24 +32,66 @@ def add_rectangle(rectangles: list[dict] | None) -> list[dict]:
     return [*current, create_rectangle()]
 
 
+def update_rectangle(
+    rectangles: list[dict] | None,
+    index: int | None,
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+) -> list[dict]:
+    current = rectangles or []
+
+    if index is None or index < 0 or index >= len(current):
+        return current
+
+    updated = list(current)
+    updated[index] = create_rectangle(x=x, y=y, width=width, height=height)
+    return updated
+
+
 def delete_rectangle(rectangles: list[dict] | None, index: int | None) -> list[dict]:
     current = rectangles or []
 
-    if index is None:
-        return current
-
-    if index < 0 or index >= len(current):
+    if index is None or index < 0 or index >= len(current):
         return current
 
     return [rect for i, rect in enumerate(current) if i != index]
 
 
-def format_rectangles(rectangles: list[dict] | None) -> str:
+def rectangle_choices(rectangles: list[dict] | None) -> list[str]:
     current = rectangles or []
+    return [f"Rectangle {index + 1}" for index, _ in enumerate(current)]
 
-    if not current:
-        return "[]"
 
-    import json
+def selected_rectangle_index(label: str | None) -> int | None:
+    if not label:
+        return None
 
-    return json.dumps(current, indent=4)
+    try:
+        return int(label.replace("Rectangle ", "")) - 1
+    except ValueError:
+        return None
+
+
+def get_rectangle_values(
+    rectangles: list[dict] | None,
+    label: str | None,
+) -> tuple[int, int, int, int]:
+    current = rectangles or []
+    index = selected_rectangle_index(label)
+
+    if index is None or index < 0 or index >= len(current):
+        return 0, 0, 100, 100
+
+    rectangle = current[index]
+    return (
+        int(rectangle["x"]),
+        int(rectangle["y"]),
+        int(rectangle["width"]),
+        int(rectangle["height"]),
+    )
+
+
+def format_rectangles(rectangles: list[dict] | None) -> str:
+    return json.dumps(rectangles or [], indent=4)
