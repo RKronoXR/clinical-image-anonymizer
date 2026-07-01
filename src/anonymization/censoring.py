@@ -8,17 +8,26 @@ Rectangle = tuple[int, int, int, int]
 RGBColor = tuple[int, int, int]
 
 
-def validate_rectangle(rectangle: Rectangle, image_size: tuple[int, int]) -> Rectangle:
+def clip_rectangle_to_image(
+    rectangle: Rectangle,
+    image_size: tuple[int, int],
+) -> Rectangle | None:
     x1, y1, x2, y2 = rectangle
     width, height = image_size
 
-    if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
-        raise ValueError(f"Rectangle is outside image bounds: {rectangle}")
+    clipped = (
+        max(0, x1),
+        max(0, y1),
+        min(width, x2),
+        min(height, y2),
+    )
 
-    if x2 <= x1 or y2 <= y1:
-        raise ValueError(f"Invalid rectangle coordinates: {rectangle}")
+    cx1, cy1, cx2, cy2 = clipped
 
-    return rectangle
+    if cx2 <= cx1 or cy2 <= cy1:
+        return None
+
+    return clipped
 
 
 def validate_rgb_color(color: RGBColor) -> RGBColor:
@@ -40,10 +49,11 @@ def censor_rectangles(
 
     censored = image.copy().convert("RGB")
     draw = ImageDraw.Draw(censored)
-
+    
     for rectangle in rectangles:
-        validate_rectangle(rectangle, censored.size)
-        draw.rectangle(rectangle, fill=color)
+        clipped_rectangle = clip_rectangle_to_image(rectangle, censored.size)
+        if clipped_rectangle is not None:
+            draw.rectangle(clipped_rectangle, fill=color)
 
     return censored
 
