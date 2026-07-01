@@ -27,15 +27,27 @@ def _valid_grid_size(grid_size: int | float | None) -> int:
     return max(10, int(grid_size))
 
 
+def _valid_grid_label_size(grid_label_size: int | float | None) -> int:
+    if grid_label_size is None:
+        return 12
+    return max(8, int(grid_label_size))
+
+
 def draw_grid(
     image: Image.Image,
     grid_size: int | float | None,
+    grid_label_size: int | float | None = 12,
 ) -> Image.Image:
     output = image.convert("RGB").copy()
     draw = ImageDraw.Draw(output)
     width, height = output.size
     step = _valid_grid_size(grid_size)
-    font = ImageFont.load_default()
+    label_size = _valid_grid_label_size(grid_label_size)
+
+    try:
+        font = ImageFont.truetype("arial.ttf", label_size)
+    except OSError:
+        font = ImageFont.load_default()
 
     for x in range(0, width, step):
         draw.line([(x, 0), (x, height)], fill=DEFAULT_GRID_COLOR, width=1)
@@ -50,15 +62,8 @@ def draw_grid(
 
 def render_original_preview(
     file_path: str | Path | None,
-    show_grid: bool = False,
-    grid_size: int | float | None = 100,
 ) -> Image.Image | None:
-    image = load_preview_image(file_path)
-    if image is None:
-        return None
-    if show_grid:
-        return draw_grid(image, grid_size)
-    return image
+    return load_preview_image(file_path)
 
 
 def render_overlay_preview(
@@ -66,13 +71,14 @@ def render_overlay_preview(
     rectangles: list[dict] | None,
     show_grid: bool = False,
     grid_size: int | float | None = 100,
+    grid_label_size: int | float | None = 12,
 ) -> Image.Image | None:
     image = load_preview_image(file_path)
     if image is None:
         return None
 
     if show_grid:
-        image = draw_grid(image, grid_size)
+        image = draw_grid(image, grid_size, grid_label_size)
 
     draw = ImageDraw.Draw(image)
     for rectangle in rectangles or []:
