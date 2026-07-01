@@ -7,6 +7,7 @@ from src.webapp.callbacks import (
     inspect_uploaded_image,
     preview_all_single_views,
 )
+from src.webapp.rectangle_interaction import handle_image_rectangle_draw
 from src.webapp.rectangle_state import (
     add_rectangle,
     format_rectangles,
@@ -95,8 +96,8 @@ def build_main_layout():
 
             with gr.Tab("Overlay"):
                 overlay_preview = gr.Image(
-                    label="Rectangle overlay preview",
-                    interactive=False,
+                    label="Draw or inspect rectangles here",
+                    interactive=True,
                     height=420,
                 )
 
@@ -198,6 +199,23 @@ def build_main_layout():
         outputs=[
             rectangle_state,
             rectangle_selector,
+            rectangles_json,
+            original_preview,
+            overlay_preview,
+            anonymized_preview,
+        ],
+    )
+
+    overlay_preview.select(
+        fn=handle_image_rectangle_draw,
+        inputs=[rectangle_state, single_file],
+        outputs=[
+            rectangle_state,
+            rectangle_selector,
+            x_input,
+            y_input,
+            width_input,
+            height_input,
             rectangles_json,
             original_preview,
             overlay_preview,
