@@ -1,46 +1,26 @@
-# src/webapp/app.py
-
 from __future__ import annotations
 
 import gradio as gr
+
+from src.webapp.layout import build_main_layout
 
 
 APP_TITLE = "Clinical Image Anonymizer"
 
 
 def build_app() -> gr.Blocks:
-    """Build the minimal local Gradio interface."""
+    """Build the local Gradio interface."""
     with gr.Blocks(title=APP_TITLE) as demo:
         gr.Markdown(f"# {APP_TITLE}")
         gr.Markdown(
             "Local-first research prototype for clinical image anonymization."
         )
 
-        with gr.Row():
-            developer_mode = gr.Checkbox(
-                label="Developer Mode",
-                value=False,
-            )
+        build_main_layout()
 
-        with gr.Row():
-            input_image = gr.Image(
-                label="Input image",
-                type="pil",
-            )
-
-        with gr.Row():
-            preview_image = gr.Image(
-                label="Preview",
-                interactive=False,
-            )
-
-        input_image.change(
-            fn=lambda img: img,
-            inputs=input_image,
-            outputs=preview_image,
+        gr.Markdown(
+            "Interface structure ready. Functional components will be added incrementally."
         )
-
-        gr.Markdown("Interface structure ready. Functional components will be added incrementally.")
 
     return demo
 
