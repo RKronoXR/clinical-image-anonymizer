@@ -364,10 +364,11 @@ def build_main_layout():
         visible=False,
     )
 
-    batch_files = gr.Files(
-        label="Upload images",
-        file_types=["image"],
-    )
+    with gr.Accordion("Upload images", open=True):
+        batch_files = gr.Files(
+            label="Batch image files",
+            file_types=["image"],
+        )
     
     batch_files.change(
         fn=handle_batch_upload,
