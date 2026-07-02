@@ -30,13 +30,6 @@ def build_image_viewer_panel(
                         height=VIEWER_IMAGE_HEIGHT,
                     )
 
-                with gr.Tab("Overlay", id="overlay"):
-                    overlay_preview = gr.Image(
-                        label="Rectangle overlay preview",
-                        interactive=False,
-                        height=VIEWER_IMAGE_HEIGHT,
-                    )
-
                 with gr.Tab("Anonymized", id="anonymized"):
                     anonymized_preview = gr.Image(
                         label="Anonymized preview",
@@ -45,15 +38,15 @@ def build_image_viewer_panel(
                     )
 
             with gr.Row(equal_height=True):
-                first_button = gr.Button(value="First")
-                previous_button = gr.Button(value="Previous")
+                first_button = gr.Button(value="First", interactive=False)
+                previous_button = gr.Button(value="Previous", interactive=False)
                 batch_position = gr.Markdown(value=initial_batch_status_html)
-                next_button = gr.Button(value="Next")
-                last_button = gr.Button(value="Last")
+                next_button = gr.Button(value="Next", interactive=False)
+                last_button = gr.Button(value="Last", interactive=False)
 
             with gr.Group(elem_classes=["cia-tight-card"]):
                 show_grid_checkbox = gr.Checkbox(
-                    label="Show pixel grid in Overlay",
+                    label="Show pixel grid",
                     value=False,
                 )
 
@@ -62,19 +55,27 @@ def build_image_viewer_panel(
                         label="Grid square size in pixels",
                         value=DEFAULT_GRID_SIZE,
                         precision=GRID_SIZE_PRECISION,
+                        interactive=False,
                         scale=1,
                     )
                     grid_label_size_input = gr.Number(
                         label="Grid number size",
                         value=DEFAULT_GRID_LABEL_SIZE,
                         precision=GRID_LABEL_SIZE_PRECISION,
+                        interactive=False,
+                        scale=1,
+                    )
+                    update_grid_button = gr.Button(
+                        value="Apply grid",
+                        variant="secondary",
+                        interactive=False,
                         scale=1,
                     )
 
     return {
         "image_tabs": image_tabs,
         "original_preview": original_preview,
-        "overlay_preview": overlay_preview,
+        "overlay_preview": original_preview,
         "anonymized_preview": anonymized_preview,
         "first_button": first_button,
         "previous_button": previous_button,
@@ -84,4 +85,5 @@ def build_image_viewer_panel(
         "show_grid_checkbox": show_grid_checkbox,
         "grid_size_input": grid_size_input,
         "grid_label_size_input": grid_label_size_input,
+        "update_grid_button": update_grid_button,
     }

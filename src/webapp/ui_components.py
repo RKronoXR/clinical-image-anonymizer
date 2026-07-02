@@ -40,6 +40,7 @@ class ViewerComponents:
     viewer_group: Any
     image_tabs: Any
     original_preview: Any
+    overlay_preview: Any
     anonymized_preview: Any
     first_button: Any
     previous_button: Any
@@ -49,6 +50,7 @@ class ViewerComponents:
     show_grid_checkbox: Any
     grid_size_input: Any
     grid_label_size_input: Any
+    update_grid_button: Any
 
     @property
     def preview_outputs(self) -> list[Any]:
@@ -58,10 +60,12 @@ class ViewerComponents:
         ]
 
     @property
-    def navigation_outputs(self) -> list[Any]:
+    def navigation_buttons(self) -> list[Any]:
         return [
-            self.original_preview,
-            self.anonymized_preview,
+            self.first_button,
+            self.previous_button,
+            self.next_button,
+            self.last_button,
         ]
 
 
@@ -72,6 +76,7 @@ class RectangleComponents:
     add_rectangle_button: Any
     delete_rectangle_button: Any
     rectangle_selector: Any
+    apply_all_images_checkbox: Any
     x_input: Any
     y_input: Any
     width_input: Any
@@ -86,6 +91,13 @@ class RectangleComponents:
             self.y_input,
             self.width_input,
             self.height_input,
+        ]
+
+    @property
+    def selection_buttons(self) -> list[Any]:
+        return [
+            self.update_rectangle_button,
+            self.delete_rectangle_button,
         ]
 
 
@@ -115,7 +127,7 @@ class UIComponents:
         initial_upload_components: dict[str, Any],
         export_components: dict[str, Any],
         workspace_components: dict[str, Any],
-    ) -> UIComponents:
+    ) -> "UIComponents":
         """Create typed component groups from panel-builder dictionaries."""
         return cls(
             state=state,
@@ -135,6 +147,7 @@ class UIComponents:
                 viewer_group=workspace_components["viewer_group"],
                 image_tabs=workspace_components["image_tabs"],
                 original_preview=workspace_components["original_preview"],
+                overlay_preview=workspace_components["overlay_preview"],
                 anonymized_preview=workspace_components["anonymized_preview"],
                 first_button=workspace_components["first_button"],
                 previous_button=workspace_components["previous_button"],
@@ -144,11 +157,13 @@ class UIComponents:
                 show_grid_checkbox=workspace_components["show_grid_checkbox"],
                 grid_size_input=workspace_components["grid_size_input"],
                 grid_label_size_input=workspace_components["grid_label_size_input"],
+                update_grid_button=workspace_components["update_grid_button"],
             ),
             rectangle=RectangleComponents(
                 add_rectangle_button=workspace_components["add_rectangle_button"],
                 delete_rectangle_button=workspace_components["delete_rectangle_button"],
                 rectangle_selector=workspace_components["rectangle_selector"],
+                apply_all_images_checkbox=workspace_components["apply_all_images_checkbox"],
                 x_input=workspace_components["x_input"],
                 y_input=workspace_components["y_input"],
                 width_input=workspace_components["width_input"],
@@ -171,7 +186,7 @@ class UIComponents:
             "viewer_group": self.viewer.viewer_group,
             "batch_index_state": self.state.batch_index_state,
             "original_preview": self.viewer.original_preview,
-            "overlay_preview": self.viewer.original_preview,
+            "overlay_preview": self.viewer.overlay_preview,
             "anonymized_preview": self.viewer.anonymized_preview,
             "batch_position": self.viewer.batch_position,
             "current_metadata_html": self.metadata.current_metadata_html,
@@ -179,6 +194,7 @@ class UIComponents:
             "add_rectangle_button": self.rectangle.add_rectangle_button,
             "delete_rectangle_button": self.rectangle.delete_rectangle_button,
             "rectangle_selector": self.rectangle.rectangle_selector,
+            "apply_all_images_checkbox": self.rectangle.apply_all_images_checkbox,
             "x_input": self.rectangle.x_input,
             "y_input": self.rectangle.y_input,
             "width_input": self.rectangle.width_input,
@@ -187,6 +203,7 @@ class UIComponents:
             "show_grid_checkbox": self.viewer.show_grid_checkbox,
             "grid_size_input": self.viewer.grid_size_input,
             "grid_label_size_input": self.viewer.grid_label_size_input,
+            "update_grid_button": self.viewer.update_grid_button,
             "rectangles_json": self.rectangle.rectangles_json,
             "export_output_folder": self.export.export_output_folder,
             "export_name_prefix": self.export.export_name_prefix,

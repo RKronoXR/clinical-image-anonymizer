@@ -25,7 +25,7 @@ def build_rectangle_panel() -> dict[str, Any]:
     ):
         with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
             with gr.Row(equal_height=True):
-                gr.Markdown("### Rectangles")
+                gr.Markdown("### Censor Rectangles")
                 add_rectangle_button = gr.Button(
                     value="Add rectangle",
                     variant="secondary",
@@ -70,10 +70,12 @@ def build_rectangle_panel() -> dict[str, Any]:
                     value="Update selected rectangle",
                     variant="secondary",
                     elem_classes=["cia-primary-action"],
+                    interactive=False,
                 )
                 delete_rectangle_button = gr.Button(
                     value="Delete selected rectangle",
                     variant="secondary",
+                    interactive=False,
                 )
 
             rectangles_json = gr.Code(
@@ -81,8 +83,10 @@ def build_rectangle_panel() -> dict[str, Any]:
                 language="json",
                 interactive=False,
                 value="{}",
-                lines=22,
-                max_lines=22,
+                lines=1,
+                max_lines=None,
+                container=True,
+                elem_id="rectangles-json",
                 wrap_lines=True,
                 elem_classes=["cia-json-card"],
             )

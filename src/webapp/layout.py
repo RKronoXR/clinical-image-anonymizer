@@ -87,6 +87,27 @@ def batch_status(files, index: int | float | None) -> str:
     """
 
 
+def navigation_button_updates(files, index: int | float | None):
+    file_paths = get_uploaded_file_paths(files)
+    if not file_paths:
+        return (
+            gr.update(interactive=False),
+            gr.update(interactive=False),
+            gr.update(interactive=False),
+            gr.update(interactive=False),
+        )
+
+    safe_index = max(0, min(int(index or 0), len(file_paths) - 1))
+    last_index = len(file_paths) - 1
+
+    return (
+        gr.update(interactive=safe_index > 0),
+        gr.update(interactive=safe_index > 0),
+        gr.update(interactive=safe_index < last_index),
+        gr.update(interactive=safe_index < last_index),
+    )
+
+
 def preview_current_batch_image(
     files,
     index,
@@ -132,6 +153,7 @@ def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
 
     has_files = len(file_paths) > 0
     metadata_html = inspect_current_uploaded_image_html(file_paths, index)
+    nav_updates = navigation_button_updates(file_paths, index)
 
     return (
         file_paths,
@@ -147,11 +169,42 @@ def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
         0,
         DEFAULT_RECTANGLE_WIDTH,
         DEFAULT_RECTANGLE_HEIGHT,
-        "[]",
+        format_rectangles([]),
         original,
         anonymized,
         batch_status(file_paths, index),
+        *nav_updates,
         gr.update(value=file_paths),
+    )
+
+
+def handle_clear_upload():
+    return (
+        [],
+        [],
+        0,
+        gr.update(visible=True),
+        gr.update(visible=False),
+        gr.update(visible=False),
+        gr.update(visible=False, value=""),
+        gr.update(choices=[], value=None),
+        gr.update(value=True),
+        0,
+        0,
+        DEFAULT_RECTANGLE_WIDTH,
+        DEFAULT_RECTANGLE_HEIGHT,
+        format_rectangles([]),
+        None,
+        None,
+        batch_status(None, None),
+        gr.update(interactive=False),
+        gr.update(interactive=False),
+        gr.update(interactive=False),
+        gr.update(interactive=False),
+        gr.update(value=[]),
+        gr.update(value=[]),
+        gr.update(interactive=False),
+        gr.update(interactive=False),
     )
 
 
@@ -197,6 +250,56 @@ def navigate_batch(
         anonymized,
         inspect_current_uploaded_image_html(files, index),
         batch_status(files, index),
+        *navigation_button_updates(files, index),
+    )
+
+
+def handle_grid_change(files, index, rectangles, show_grid, grid_size, grid_label_size):
+    return preview_current_batch_image(
+        files,
+        index,
+        rectangles,
+        show_grid,
+        grid_size,
+        grid_label_size,
+    )
+
+
+def handle_grid_visibility_change(
+    files,
+    index,
+    rectangles,
+    show_grid,
+    grid_size,
+    grid_label_size,
+):
+    original, anonymized = preview_current_batch_image(
+        files,
+        index,
+        rectangles,
+        show_grid,
+        grid_size,
+        grid_label_size,
+    )
+    return (
+        original,
+        anonymized,
+        gr.update(interactive=bool(show_grid)),
+        gr.update(interactive=bool(show_grid)),
+        gr.update(interactive=bool(show_grid)),
+    )
+
+
+def handle_rectangle_selection(rectangles, label):
+    x, y, width, height = get_rectangle_values(rectangles, label)
+    has_selection = selected_rectangle_index(label) is not None
+    return (
+        x,
+        y,
+        width,
+        height,
+        gr.update(interactive=has_selection),
+        gr.update(interactive=has_selection),
     )
 
 
@@ -242,6 +345,8 @@ def handle_add_rectangle(
         original,
         anonymized,
         gr.update(selected="original"),
+        gr.update(interactive=True),
+        gr.update(interactive=True),
     )
 
 
@@ -292,6 +397,7 @@ def handle_delete_rectangle(
     choices = rectangle_choices(updated)
     selected = choices[min(rectangle_index or 0, len(choices) - 1)] if choices else None
     x, y, width, height = get_rectangle_values(updated, selected)
+    has_selection = selected is not None
 
     original, anonymized = preview_current_batch_image(
         files,
@@ -312,17 +418,8 @@ def handle_delete_rectangle(
         format_rectangles(updated),
         original,
         anonymized,
-    )
-
-
-def handle_grid_change(files, index, rectangles, show_grid, grid_size, grid_label_size):
-    return preview_current_batch_image(
-        files,
-        index,
-        rectangles,
-        show_grid,
-        grid_size,
-        grid_label_size,
+        gr.update(interactive=has_selection),
+        gr.update(interactive=has_selection),
     )
 
 
@@ -351,9 +448,12 @@ def build_main_layout():
         handle_workspace_upload=handle_workspace_upload,
         navigate_batch=navigate_batch,
         handle_grid_change=handle_grid_change,
+        handle_grid_visibility_change=handle_grid_visibility_change,
+        handle_rectangle_selection=handle_rectangle_selection,
         handle_add_rectangle=handle_add_rectangle,
         handle_update_rectangle=handle_update_rectangle,
         handle_delete_rectangle=handle_delete_rectangle,
+        handle_clear_upload=handle_clear_upload,
     )
 
     export_button = export_components["export_button"]
