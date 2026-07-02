@@ -89,11 +89,12 @@ def preview_current_batch_image(
     )
 
 
-def handle_batch_upload(files, show_grid, grid_size, grid_label_size):
+def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
+    file_paths = get_uploaded_file_paths(files)
     rectangles: list[dict] = []
     index = 0
     original, overlay, anonymized = preview_current_batch_image(
-        files,
+        file_paths,
         index,
         rectangles,
         show_grid,
@@ -101,13 +102,17 @@ def handle_batch_upload(files, show_grid, grid_size, grid_label_size):
         grid_label_size,
     )
 
-    has_files = len(get_uploaded_file_paths(files)) > 0
+    has_files = len(file_paths) > 0
+    metadata_html = inspect_current_uploaded_image_html(file_paths, index)
 
     return (
+        file_paths,
         rectangles,
         index,
+        gr.update(visible=not has_files),
         gr.update(visible=has_files),
         gr.update(visible=has_files),
+        gr.update(visible=has_files, value=metadata_html),
         gr.update(choices=[], value=None),
         0,
         0,
@@ -117,8 +122,8 @@ def handle_batch_upload(files, show_grid, grid_size, grid_label_size):
         original,
         overlay,
         anonymized,
-        inspect_current_uploaded_image_html(files, index),
-        batch_status(files, index),
+        batch_status(file_paths, index),
+        gr.update(value=file_paths),
     )
 
 
@@ -277,10 +282,23 @@ def handle_grid_change(files, index, rectangles, show_grid, grid_size, grid_labe
 
 
 def build_main_layout():
+    files_state = gr.State([])
     rectangle_state = gr.State([])
     batch_index_state = gr.State(0)
 
-    with gr.Group(visible=False) as viewer_group:
+    with gr.Group(elem_classes=["cia-card", "cia-initial-upload-card"]) as initial_upload_group:
+        gr.Markdown("### Upload images")
+        initial_batch_files = gr.Files(
+            label="Drag and drop images here or click to browse",
+            file_types=["image"],
+            elem_classes=["cia-upload-dropzone"],
+        )
+        gr.Markdown(
+            "Supported formats: JPG, PNG, TIFF, DICOM",
+            elem_classes=["cia-muted"],
+        )
+
+    with gr.Group(visible=False, elem_classes=["cia-card"]) as export_group:
         with gr.Row(equal_height=True):
             export_output_folder = gr.Textbox(
                 label="Output folder",
@@ -293,7 +311,7 @@ def build_main_layout():
                 label="Output filename prefix",
                 value="Anonymized_",
                 interactive=True,
-                scale=2,
+                scale=3,
             )
 
             export_randomize_order = gr.Checkbox(
@@ -305,135 +323,158 @@ def build_main_layout():
             export_button = gr.Button(
                 value="Export anonymized images",
                 scale=2,
+                variant="secondary",
+                elem_classes=["cia-primary-action"],
             )
-        with gr.Row():
-            with gr.Column(scale=3, min_width=720):
-                with gr.Tabs(selected="original") as image_tabs:
-                    with gr.Tab("Original", id="original"):
-                        original_preview = gr.Image(
-                            label="Current image",
-                            interactive=False,
-                            height=620,
+
+            gr.HTML(
+                """
+                <div class="cia-export-status">
+                    <span class="cia-muted">Export status</span>
+                    <strong>✓ Ready to export</strong>
+                </div>
+                """,
+            )
+
+    with gr.Group(visible=False) as viewer_group:
+        with gr.Row(equal_height=False):
+            with gr.Column(scale=7, min_width=760):
+                with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
+                    with gr.Tabs(selected="original", elem_classes=["cia-image-tabs"]) as image_tabs:
+                        with gr.Tab("Original", id="original"):
+                            original_preview = gr.Image(
+                                label="Current image",
+                                interactive=False,
+                                height=600,
+                            )
+
+                        with gr.Tab("Overlay", id="overlay"):
+                            overlay_preview = gr.Image(
+                                label="Rectangle overlay preview",
+                                interactive=False,
+                                height=600,
+                            )
+
+                        with gr.Tab("Anonymized", id="anonymized"):
+                            anonymized_preview = gr.Image(
+                                label="Anonymized preview",
+                                interactive=False,
+                                height=600,
+                            )
+
+                    with gr.Row(equal_height=True):
+                        first_button = gr.Button(value="First")
+                        previous_button = gr.Button(value="Previous")
+                        batch_position = gr.Markdown(value=batch_status(None, None))
+                        next_button = gr.Button(value="Next")
+                        last_button = gr.Button(value="Last")
+
+                    with gr.Group(elem_classes=["cia-tight-card"]):
+                        show_grid_checkbox = gr.Checkbox(
+                            label="Show pixel grid in Overlay",
+                            value=False,
                         )
 
-                    with gr.Tab("Overlay", id="overlay"):
-                        overlay_preview = gr.Image(
-                            label="Rectangle overlay preview",
-                            interactive=False,
-                            height=620,
+                        with gr.Row(equal_height=True):
+                            grid_size_input = gr.Number(
+                                label="Grid square size in pixels",
+                                value=100,
+                                precision=0,
+                                scale=1,
+                            )
+                            grid_label_size_input = gr.Number(
+                                label="Grid number size",
+                                value=12,
+                                precision=0,
+                                scale=1,
+                            )
+
+            with gr.Column(scale=3, min_width=360, elem_classes=["cia-right-column"]):
+                with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
+                    with gr.Row(equal_height=True):
+                        gr.Markdown(
+                            "### Rectangles <span class='cia-muted'>(global for all images)</span>"
+                        )
+                        add_rectangle_button = gr.Button(
+                            value="Add rectangle",
+                            variant="secondary",
+                            scale=0,
+                            elem_classes=["cia-primary-action"],
                         )
 
-                    with gr.Tab("Anonymized", id="anonymized"):
-                        anonymized_preview = gr.Image(
-                            label="Anonymized preview",
-                            interactive=False,
-                            height=620,
+                    rectangle_selector = gr.Dropdown(
+                        label="Selected rectangle",
+                        choices=[],
+                        value=None,
+                        interactive=True,
+                    )
+
+                    with gr.Row(equal_height=True):
+                        x_input = gr.Number(label="X", value=0, precision=0)
+                        y_input = gr.Number(label="Y", value=0, precision=0)
+
+                    with gr.Row(equal_height=True):
+                        width_input = gr.Number(
+                            label="W",
+                            value=DEFAULT_RECTANGLE_WIDTH,
+                            precision=0,
                         )
 
-                with gr.Row():
-                    first_button = gr.Button(value="First")
-                    previous_button = gr.Button(value="Previous")
-                    batch_position = gr.Markdown(value=batch_status(None, None))
-                    next_button = gr.Button(value="Next")
-                    last_button = gr.Button(value="Last")
+                        height_input = gr.Number(
+                            label="H",
+                            value=DEFAULT_RECTANGLE_HEIGHT,
+                            precision=0,
+                        )
 
-            with gr.Column(scale=1, min_width=360):
-                show_grid_checkbox = gr.Checkbox(
-                    label="Show pixel grid in Overlay",
-                    value=False,
+                    update_rectangle_button = gr.Button(
+                        value="Update selected rectangle",
+                        variant="secondary",
+                        elem_classes=["cia-primary-action"],
+                    )
+                    delete_rectangle_button = gr.Button(value="Delete selected rectangle")
+
+                    rectangles_json = gr.Code(
+                        label="Rectangle coordinates",
+                        language="json",
+                        interactive=False,
+                        value="[]",
+                        elem_classes=["cia-json-card"],
+                    )
+        with gr.Row(equal_height=False):
+            with gr.Column(scale=7, min_width=760):
+                current_metadata_html = gr.HTML(
+                    label="Current image metadata",
+                    visible=False,
+                    elem_classes=["cia-card", "cia-bottom-panel"],
                 )
 
-                with gr.Row(equal_height=True):
-                    gr.HTML("""
-                    <div style='height:56px; display:flex; align-items:center; justify-content:center; text-align:center; background:#1f1f23; border-radius:6px; font-weight:600; line-height:1.1;'>
-                        Grid square<br>size in pixels
-                    </div>
-                    """)
-                    grid_size_input = gr.Number(
-                        label="Grid square size in pixels",
-                        value=100,
-                        precision=0,
-                        show_label=False,
+            with gr.Column(scale=3, min_width=360):
+                with gr.Group(elem_classes=["cia-card", "cia-upload-panel", "cia-bottom-panel"]):
+                    gr.Markdown("### Upload images")
+                    side_batch_files = gr.Files(
+                        label="Drag and drop images here or click to browse",
+                        file_types=["image"],
+                        elem_classes=["cia-upload-dropzone"],
+                    )
+                    gr.Markdown(
+                        "Supported formats: JPG, PNG, TIFF, DICOM",
+                        elem_classes=["cia-muted"],
                     )
 
-                with gr.Row(equal_height=True):
-                    gr.HTML("""
-                    <div style='height:56px; display:flex; align-items:center; justify-content:center; text-align:center; background:#1f1f23; border-radius:6px; font-weight:600; line-height:1.1;'>
-                        Grid number<br>size
-                    </div>
-                    """)
-                    grid_label_size_input = gr.Number(
-                        label="Grid number size",
-                        value=12,
-                        precision=0,
-                        show_label=False,
-                    )
-
-                add_rectangle_button = gr.Button(value="Add rectangle")
-
-                rectangle_selector = gr.Dropdown(
-                    label="Selected rectangle",
-                    choices=[],
-                    value=None,
-                    interactive=True,
-                )
-
-                with gr.Row(equal_height=True):
-                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>X</div>")
-                    x_input = gr.Number(label="X", value=0, precision=0, show_label=False)
-
-                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>Y</div>")
-                    y_input = gr.Number(label="Y", value=0, precision=0, show_label=False)
-
-                with gr.Row(equal_height=True):
-                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>W</div>")
-                    width_input = gr.Number(
-                        label="W",
-                        value=DEFAULT_RECTANGLE_WIDTH,
-                        precision=0,
-                        show_label=False,
-                    )
-
-                    gr.HTML("<div style='height:56px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border-radius:6px; font-weight:600;'>H</div>")
-                    height_input = gr.Number(
-                        label="H",
-                        value=DEFAULT_RECTANGLE_HEIGHT,
-                        precision=0,
-                        show_label=False,
-                    )
-
-                update_rectangle_button = gr.Button(value="Update selected rectangle")
-                delete_rectangle_button = gr.Button(value="Delete selected rectangle")
-
-                rectangles_json = gr.Code(
-                    label="Rectangle coordinates",
-                    language="json",
-                    interactive=False,
-                    value="[]",
-                )
-
-    current_metadata_html = gr.HTML(
-        label="Current image metadata",
-        visible=False,
-    )
-
-    with gr.Accordion("Upload images", open=True):
-        batch_files = gr.Files(
-            label="Batch image files",
-            file_types=["image"],
-        )
-
-    batch_files.change(
-        fn=handle_batch_upload,
+    initial_batch_files.change(
+        fn=handle_workspace_upload,
         inputs=[
-            batch_files,
+            initial_batch_files,
             show_grid_checkbox,
             grid_size_input,
             grid_label_size_input,
         ],
         outputs=[
+            files_state,
             rectangle_state,
             batch_index_state,
+            initial_upload_group,
+            export_group,
             viewer_group,
             current_metadata_html,
             rectangle_selector,
@@ -445,8 +486,38 @@ def build_main_layout():
             original_preview,
             overlay_preview,
             anonymized_preview,
-            current_metadata_html,
             batch_position,
+            side_batch_files,
+        ],
+    )
+
+    side_batch_files.change(
+        fn=handle_workspace_upload,
+        inputs=[
+            side_batch_files,
+            show_grid_checkbox,
+            grid_size_input,
+            grid_label_size_input,
+        ],
+        outputs=[
+            files_state,
+            rectangle_state,
+            batch_index_state,
+            initial_upload_group,
+            export_group,
+            viewer_group,
+            current_metadata_html,
+            rectangle_selector,
+            x_input,
+            y_input,
+            width_input,
+            height_input,
+            rectangles_json,
+            original_preview,
+            overlay_preview,
+            anonymized_preview,
+            batch_position,
+            side_batch_files,
         ],
     )
 
@@ -455,7 +526,7 @@ def build_main_layout():
             files, index, "first", rectangles, show_grid, grid_size, grid_label_size
         ),
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -477,7 +548,7 @@ def build_main_layout():
             files, index, "previous", rectangles, show_grid, grid_size, grid_label_size
         ),
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -499,7 +570,7 @@ def build_main_layout():
             files, index, "next", rectangles, show_grid, grid_size, grid_label_size
         ),
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -521,7 +592,7 @@ def build_main_layout():
             files, index, "last", rectangles, show_grid, grid_size, grid_label_size
         ),
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -541,7 +612,7 @@ def build_main_layout():
     show_grid_checkbox.change(
         fn=handle_grid_change,
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -558,7 +629,7 @@ def build_main_layout():
     grid_size_input.change(
         fn=handle_grid_change,
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -571,7 +642,7 @@ def build_main_layout():
     grid_label_size_input.change(
         fn=handle_grid_change,
         inputs=[
-            batch_files,
+            files_state,
             batch_index_state,
             rectangle_state,
             show_grid_checkbox,
@@ -585,7 +656,7 @@ def build_main_layout():
         fn=handle_add_rectangle,
         inputs=[
             rectangle_state,
-            batch_files,
+            files_state,
             batch_index_state,
             show_grid_checkbox,
             grid_size_input,
@@ -617,7 +688,7 @@ def build_main_layout():
             y_input,
             width_input,
             height_input,
-            batch_files,
+            files_state,
             batch_index_state,
             show_grid_checkbox,
             grid_size_input,
@@ -637,7 +708,7 @@ def build_main_layout():
         inputs=[
             rectangle_state,
             rectangle_selector,
-            batch_files,
+            files_state,
             batch_index_state,
             show_grid_checkbox,
             grid_size_input,
@@ -658,7 +729,10 @@ def build_main_layout():
     )
 
     return {
-        "batch_files": batch_files,
+        "files_state": files_state,
+        "initial_batch_files": initial_batch_files,
+        "side_batch_files": side_batch_files,
+        "export_group": export_group,
         "viewer_group": viewer_group,
         "batch_index_state": batch_index_state,
         "original_preview": original_preview,

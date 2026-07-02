@@ -1,0 +1,110 @@
+:root {
+    --cia-card-border: rgba(148, 163, 184, 0.22);
+    --cia-card-bg: rgba(15, 23, 42, 0.42);
+    --cia-muted: rgba(226, 232, 240, 0.72);
+    --cia-primary: #7c3aed;
+    --cia-primary-hover: #6d28d9;
+
+    --cia-top-panel-height: 860px;
+    --cia-bottom-panel-height: 620px;
+    --cia-json-height: 415px;
+    --cia-upload-list-height: 490px;
+}
+
+.gradio-container {
+    max-width: 1860px !important;
+    margin: 0 auto !important;
+}
+
+.cia-title {
+    margin-bottom: 0.15rem;
+}
+
+.cia-subtitle {
+    color: var(--cia-muted);
+    margin-top: 0;
+}
+
+.cia-card {
+    border: 1px solid var(--cia-card-border);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--cia-card-bg);
+}
+
+.cia-tight-card {
+    border: 1px solid var(--cia-card-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: var(--cia-card-bg);
+}
+
+.cia-muted {
+    color: var(--cia-muted);
+}
+
+.cia-primary-action {
+    background: var(--cia-primary) !important;
+    border-color: var(--cia-primary) !important;
+    color: white !important;
+}
+
+.cia-primary-action:hover {
+    background: var(--cia-primary-hover) !important;
+    border-color: var(--cia-primary-hover) !important;
+}
+
+.cia-export-status {
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cia-export-status strong {
+    color: #4ade80;
+}
+
+.cia-initial-upload-card {
+    max-width: 760px;
+    margin-top: 1rem;
+}
+
+.cia-top-panel {
+    height: var(--cia-top-panel-height) !important;
+    overflow: hidden !important;
+}
+
+.cia-bottom-panel {
+    height: var(--cia-bottom-panel-height) !important;
+    overflow: hidden !important;
+}
+
+.cia-bottom-panel > div {
+    height: 100% !important;
+    overflow-y: auto !important;
+}
+
+.cia-image-tabs img {
+    object-fit: contain !important;
+}
+
+.cia-json-card {
+    height: var(--cia-json-height) !important;
+    max-height: var(--cia-json-height) !important;
+    overflow: hidden !important;
+}
+
+.cia-json-card .cm-editor,
+.cia-json-card pre,
+.cia-json-card textarea {
+    height: calc(var(--cia-json-height) - 40px) !important;
+    max-height: calc(var(--cia-json-height) - 40px) !important;
+    overflow-y: auto !important;
+}
+
+.cia-upload-panel .file-preview,
+.cia-upload-panel [data-testid="file-preview"] {
+    max-height: var(--cia-upload-list-height) !important;
+    overflow-y: auto !important;
+}
