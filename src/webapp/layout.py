@@ -16,6 +16,11 @@ from src.webapp.preview_rendering import (
     render_original_preview,
     render_overlay_preview,
 )
+from src.webapp.ui_constants import (
+    BATCH_STATUS_BACKGROUND,
+    BATCH_STATUS_BORDER_RADIUS_PX,
+    BATCH_STATUS_HEIGHT_PX,
+)
 from src.webapp.rectangle_state import (
     DEFAULT_RECTANGLE_HEIGHT,
     DEFAULT_RECTANGLE_WIDTH,
@@ -41,15 +46,15 @@ def get_current_batch_path(files, index: int | float | None) -> str | None:
 def batch_status(files, index: int | float | None) -> str:
     file_paths = get_uploaded_file_paths(files)
     if not file_paths:
-        return """
+        return f"""
         <div style="
-            height:42px;
-            background:#5a5a66;
+            height:{BATCH_STATUS_HEIGHT_PX}px;
+            background:{BATCH_STATUS_BACKGROUND};
             display:flex;
             align-items:center;
             justify-content:center;
             font-weight:600;
-            border-radius:4px;
+            border-radius:{BATCH_STATUS_BORDER_RADIUS_PX}px;
         ">
             No images loaded.
         </div>
@@ -58,13 +63,13 @@ def batch_status(files, index: int | float | None) -> str:
     safe_index = max(0, min(int(index or 0), len(file_paths) - 1))
     return f"""
     <div style="
-        height:42px;
-        background:#5a5a66;
+        height:{BATCH_STATUS_HEIGHT_PX}px;
+        background:{BATCH_STATUS_BACKGROUND};
         display:flex;
         align-items:center;
         justify-content:center;
         font-weight:600;
-        border-radius:4px;
+        border-radius:{BATCH_STATUS_BORDER_RADIUS_PX}px;
     ">
         Image {safe_index + 1} of {len(file_paths)}
     </div>

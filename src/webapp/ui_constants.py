@@ -1,0 +1,43 @@
+from __future__ import annotations
+
+# Layout sizing
+LEFT_COLUMN_SCALE = 7
+RIGHT_COLUMN_SCALE = 3
+LEFT_COLUMN_MIN_WIDTH = 760
+RIGHT_COLUMN_MIN_WIDTH = 360
+VIEWER_IMAGE_HEIGHT = 600
+
+# Grid controls
+DEFAULT_GRID_SIZE = 100
+DEFAULT_GRID_LABEL_SIZE = 12
+GRID_SIZE_PRECISION = 0
+GRID_LABEL_SIZE_PRECISION = 0
+
+# Rectangle editor controls
+RECTANGLE_INPUT_PRECISION = 0
+RECTANGLE_BUTTON_SCALE = 0
+
+# Export controls
+EXPORT_OUTPUT_FOLDER_DEFAULT = "outputs/anonymized"
+EXPORT_NAME_PREFIX_DEFAULT = "Anonymized_"
+EXPORT_OUTPUT_FOLDER_SCALE = 4
+EXPORT_NAME_PREFIX_SCALE = 3
+EXPORT_RANDOMIZE_ORDER_SCALE = 2
+EXPORT_BUTTON_SCALE = 2
+
+# Upload controls
+SUPPORTED_IMAGE_FILE_TYPES = ["image"]
+SUPPORTED_IMAGE_FORMATS_TEXT = "Supported formats: JPG, PNG, TIFF, DICOM"
+UPLOAD_LABEL = "Drag and drop images here or click to browse"
+
+# Batch status display
+BATCH_STATUS_HEIGHT_PX = 42
+BATCH_STATUS_BACKGROUND = "#5a5a66"
+BATCH_STATUS_BORDER_RADIUS_PX = 4
+
+# CSS variable mirror values.
+# These are documented here so future CSS cleanup can migrate hardcoded heights safely.
+TOP_PANEL_HEIGHT_PX = 860
+BOTTOM_PANEL_HEIGHT_PX = 700
+JSON_PANEL_HEIGHT_PX = 415
+UPLOAD_LIST_HEIGHT_PX = 570

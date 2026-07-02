@@ -8,6 +8,28 @@ from src.webapp.rectangle_state import (
     DEFAULT_RECTANGLE_HEIGHT,
     DEFAULT_RECTANGLE_WIDTH,
 )
+from src.webapp.ui_constants import (
+    DEFAULT_GRID_LABEL_SIZE,
+    DEFAULT_GRID_SIZE,
+    EXPORT_BUTTON_SCALE,
+    EXPORT_NAME_PREFIX_DEFAULT,
+    EXPORT_NAME_PREFIX_SCALE,
+    EXPORT_OUTPUT_FOLDER_DEFAULT,
+    EXPORT_OUTPUT_FOLDER_SCALE,
+    EXPORT_RANDOMIZE_ORDER_SCALE,
+    GRID_LABEL_SIZE_PRECISION,
+    GRID_SIZE_PRECISION,
+    LEFT_COLUMN_MIN_WIDTH,
+    LEFT_COLUMN_SCALE,
+    RECTANGLE_BUTTON_SCALE,
+    RECTANGLE_INPUT_PRECISION,
+    RIGHT_COLUMN_MIN_WIDTH,
+    RIGHT_COLUMN_SCALE,
+    SUPPORTED_IMAGE_FILE_TYPES,
+    SUPPORTED_IMAGE_FORMATS_TEXT,
+    UPLOAD_LABEL,
+    VIEWER_IMAGE_HEIGHT,
+)
 
 
 def build_upload_panel(
@@ -20,12 +42,12 @@ def build_upload_panel(
     with gr.Group(elem_classes=container_classes or ["cia-card"]) as upload_group:
         gr.Markdown(f"### {title}")
         batch_files = gr.Files(
-            label="Drag and drop images here or click to browse",
-            file_types=["image"],
+            label=UPLOAD_LABEL,
+            file_types=SUPPORTED_IMAGE_FILE_TYPES,
             elem_classes=files_classes or ["cia-upload-dropzone"],
         )
         gr.Markdown(
-            "Supported formats: JPG, PNG, TIFF, DICOM",
+            SUPPORTED_IMAGE_FORMATS_TEXT,
             elem_classes=["cia-muted"],
         )
 
@@ -49,27 +71,27 @@ def build_export_panel() -> dict[str, Any]:
         with gr.Row(equal_height=True):
             export_output_folder = gr.Textbox(
                 label="Output folder",
-                value="outputs/anonymized",
+                value=EXPORT_OUTPUT_FOLDER_DEFAULT,
                 interactive=True,
-                scale=4,
+                scale=EXPORT_OUTPUT_FOLDER_SCALE,
             )
 
             export_name_prefix = gr.Textbox(
                 label="Output filename prefix",
-                value="Anonymized_",
+                value=EXPORT_NAME_PREFIX_DEFAULT,
                 interactive=True,
-                scale=3,
+                scale=EXPORT_NAME_PREFIX_SCALE,
             )
 
             export_randomize_order = gr.Checkbox(
                 label="Randomize output image order",
                 value=False,
-                scale=2,
+                scale=EXPORT_RANDOMIZE_ORDER_SCALE,
             )
 
             export_button = gr.Button(
                 value="Export anonymized images",
-                scale=2,
+                scale=EXPORT_BUTTON_SCALE,
                 variant="secondary",
                 elem_classes=["cia-primary-action"],
             )
@@ -97,28 +119,28 @@ def build_image_viewer_panel(
     initial_batch_status_html: str,
 ) -> dict[str, Any]:
     """Build image preview tabs, navigation, and grid controls."""
-    with gr.Column(scale=7, min_width=760):
+    with gr.Column(scale=LEFT_COLUMN_SCALE, min_width=LEFT_COLUMN_MIN_WIDTH):
         with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
             with gr.Tabs(selected="original", elem_classes=["cia-image-tabs"]) as image_tabs:
                 with gr.Tab("Original", id="original"):
                     original_preview = gr.Image(
                         label="Current image",
                         interactive=False,
-                        height=600,
+                        height=VIEWER_IMAGE_HEIGHT,
                     )
 
                 with gr.Tab("Overlay", id="overlay"):
                     overlay_preview = gr.Image(
                         label="Rectangle overlay preview",
                         interactive=False,
-                        height=600,
+                        height=VIEWER_IMAGE_HEIGHT,
                     )
 
                 with gr.Tab("Anonymized", id="anonymized"):
                     anonymized_preview = gr.Image(
                         label="Anonymized preview",
                         interactive=False,
-                        height=600,
+                        height=VIEWER_IMAGE_HEIGHT,
                     )
 
             with gr.Row(equal_height=True):
@@ -137,14 +159,14 @@ def build_image_viewer_panel(
                 with gr.Row(equal_height=True):
                     grid_size_input = gr.Number(
                         label="Grid square size in pixels",
-                        value=100,
-                        precision=0,
+                        value=DEFAULT_GRID_SIZE,
+                        precision=GRID_SIZE_PRECISION,
                         scale=1,
                     )
                     grid_label_size_input = gr.Number(
                         label="Grid number size",
-                        value=12,
-                        precision=0,
+                        value=DEFAULT_GRID_LABEL_SIZE,
+                        precision=GRID_LABEL_SIZE_PRECISION,
                         scale=1,
                     )
 
@@ -166,7 +188,7 @@ def build_image_viewer_panel(
 
 def build_rectangle_panel() -> dict[str, Any]:
     """Build global rectangle controls."""
-    with gr.Column(scale=3, min_width=360, elem_classes=["cia-right-column"]):
+    with gr.Column(scale=RIGHT_COLUMN_SCALE, min_width=RIGHT_COLUMN_MIN_WIDTH, elem_classes=["cia-right-column"]):
         with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
             with gr.Row(equal_height=True):
                 gr.Markdown(
@@ -175,7 +197,7 @@ def build_rectangle_panel() -> dict[str, Any]:
                 add_rectangle_button = gr.Button(
                     value="Add rectangle",
                     variant="secondary",
-                    scale=0,
+                    scale=RECTANGLE_BUTTON_SCALE,
                     elem_classes=["cia-primary-action"],
                 )
 
@@ -187,20 +209,20 @@ def build_rectangle_panel() -> dict[str, Any]:
             )
 
             with gr.Row(equal_height=True):
-                x_input = gr.Number(label="X", value=0, precision=0)
-                y_input = gr.Number(label="Y", value=0, precision=0)
+                x_input = gr.Number(label="X", value=0, precision=RECTANGLE_INPUT_PRECISION)
+                y_input = gr.Number(label="Y", value=0, precision=RECTANGLE_INPUT_PRECISION)
 
             with gr.Row(equal_height=True):
                 width_input = gr.Number(
                     label="W",
                     value=DEFAULT_RECTANGLE_WIDTH,
-                    precision=0,
+                    precision=RECTANGLE_INPUT_PRECISION,
                 )
 
                 height_input = gr.Number(
                     label="H",
                     value=DEFAULT_RECTANGLE_HEIGHT,
-                    precision=0,
+                    precision=RECTANGLE_INPUT_PRECISION,
                 )
 
             update_rectangle_button = gr.Button(
@@ -233,7 +255,7 @@ def build_rectangle_panel() -> dict[str, Any]:
 
 def build_metadata_panel() -> dict[str, Any]:
     """Build the current image metadata panel."""
-    with gr.Column(scale=7, min_width=760):
+    with gr.Column(scale=LEFT_COLUMN_SCALE, min_width=LEFT_COLUMN_MIN_WIDTH):
         current_metadata_html = gr.HTML(
             label="Current image metadata",
             visible=False,
@@ -247,7 +269,7 @@ def build_metadata_panel() -> dict[str, Any]:
 
 def build_side_upload_panel() -> dict[str, Any]:
     """Build the upload panel shown beside metadata after images are loaded."""
-    with gr.Column(scale=3, min_width=360):
+    with gr.Column(scale=RIGHT_COLUMN_SCALE, min_width=RIGHT_COLUMN_MIN_WIDTH):
         upload_components = build_upload_panel(
             container_classes=["cia-card", "cia-upload-panel", "cia-bottom-panel"],
             files_classes=["cia-upload-dropzone"],
