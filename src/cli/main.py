@@ -8,6 +8,8 @@ from typing import TypeAlias
 from src.cli.file_discovery import discover_input_images
 from src.common.export_plan import build_export_plan
 
+from src.cli.runner import run_export_plan
+
 Rect: TypeAlias = tuple[int, int, int, int]
 
 
@@ -142,6 +144,22 @@ def main() -> int:
         print("\nPlanned outputs:")
         for item in export_plan:
             print(f"- {item.input_path} -> {item.output_path}")
+
+
+    if not args.dry_run:
+        summary = run_export_plan(export_plan, rects=rects, overwrite=args.overwrite)
+
+        print("\nRun summary:")
+        print(f"Processed  : {summary.processed}")
+        print(f"Failed     : {summary.failed}")
+
+        if summary.errors:
+            print("\nErrors:")
+            for error in summary.errors:
+                print(f"- {error}")
+
+        if summary.failed > 0:
+            return 1
 
     return 0
 
