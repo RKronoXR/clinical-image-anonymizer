@@ -75,7 +75,7 @@ def build_rectangle_panel() -> dict[str, Any]:
                 language="json",
                 interactive=False,
                 value="[]",
-                lines=20,
+                lines=16,
                 elem_classes=["cia-json-card"],
             )
 

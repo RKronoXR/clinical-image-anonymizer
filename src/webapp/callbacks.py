@@ -87,7 +87,7 @@ def _format_metadata_block(title: str, metadata: dict[str, str]) -> str:
         ">
             <strong>ℹ Technical note:</strong>
             exported formats such as JPEG, TIFF, or PNG may add technical format metadata.
-            These fields do not contain patient-identifying information.
+            These automatically generated fields do not contain patient-identifying information.
         </div>
     """ if title == "Anonymized Metadata" else ""
 

@@ -40,7 +40,6 @@ class ViewerComponents:
     viewer_group: Any
     image_tabs: Any
     original_preview: Any
-    overlay_preview: Any
     anonymized_preview: Any
     first_button: Any
     previous_button: Any
@@ -55,7 +54,6 @@ class ViewerComponents:
     def preview_outputs(self) -> list[Any]:
         return [
             self.original_preview,
-            self.overlay_preview,
             self.anonymized_preview,
         ]
 
@@ -63,7 +61,6 @@ class ViewerComponents:
     def navigation_outputs(self) -> list[Any]:
         return [
             self.original_preview,
-            self.overlay_preview,
             self.anonymized_preview,
         ]
 
@@ -138,7 +135,6 @@ class UIComponents:
                 viewer_group=workspace_components["viewer_group"],
                 image_tabs=workspace_components["image_tabs"],
                 original_preview=workspace_components["original_preview"],
-                overlay_preview=workspace_components["overlay_preview"],
                 anonymized_preview=workspace_components["anonymized_preview"],
                 first_button=workspace_components["first_button"],
                 previous_button=workspace_components["previous_button"],
@@ -175,7 +171,7 @@ class UIComponents:
             "viewer_group": self.viewer.viewer_group,
             "batch_index_state": self.state.batch_index_state,
             "original_preview": self.viewer.original_preview,
-            "overlay_preview": self.viewer.overlay_preview,
+            "overlay_preview": self.viewer.original_preview,
             "anonymized_preview": self.viewer.anonymized_preview,
             "batch_position": self.viewer.batch_position,
             "current_metadata_html": self.metadata.current_metadata_html,

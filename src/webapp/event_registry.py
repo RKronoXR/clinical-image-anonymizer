@@ -41,9 +41,7 @@ def _workspace_upload_outputs(components: UIComponents) -> list[Any]:
         components.rectangle.width_input,
         components.rectangle.height_input,
         components.rectangle.rectangles_json,
-        components.viewer.original_preview,
-        components.viewer.overlay_preview,
-        components.viewer.anonymized_preview,
+        *components.viewer.preview_outputs,
         components.viewer.batch_position,
         components.upload.side_batch_files,
     ]
@@ -179,7 +177,7 @@ def register_callbacks(
         inputs=_shared_preview_inputs(components),
         outputs=components.viewer.preview_outputs,
     ).then(
-        fn=lambda: gr.update(selected="overlay"),
+        fn=lambda: gr.update(selected="original"),
         inputs=None,
         outputs=components.viewer.image_tabs,
     )

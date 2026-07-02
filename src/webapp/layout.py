@@ -2,25 +2,18 @@ from __future__ import annotations
 
 import gradio as gr
 
-from src.webapp.event_registry import register_callbacks
-from src.webapp.ui_components import StateComponents, UIComponents
-from src.webapp.layout_components import build_viewer_workspace
-from src.webapp.panels.export_panel import build_export_panel
-from src.webapp.panels.upload_panel import build_initial_upload_panel
 from src.webapp.callbacks import (
     get_uploaded_file_paths,
     handle_export_batch,
     inspect_current_uploaded_image_html,
 )
+from src.webapp.event_registry import register_callbacks
+from src.webapp.layout_components import build_viewer_workspace
+from src.webapp.panels.export_panel import build_export_panel
+from src.webapp.panels.upload_panel import build_initial_upload_panel
 from src.webapp.preview_rendering import (
     render_censored_preview,
-    render_original_preview,
     render_overlay_preview,
-)
-from src.webapp.ui_constants import (
-    BATCH_STATUS_BACKGROUND,
-    BATCH_STATUS_BORDER_RADIUS_PX,
-    BATCH_STATUS_HEIGHT_PX,
 )
 from src.webapp.rectangle_state import (
     DEFAULT_RECTANGLE_HEIGHT,
@@ -32,6 +25,12 @@ from src.webapp.rectangle_state import (
     rectangle_choices,
     selected_rectangle_index,
     update_rectangle,
+)
+from src.webapp.ui_components import StateComponents, UIComponents
+from src.webapp.ui_constants import (
+    BATCH_STATUS_BACKGROUND,
+    BATCH_STATUS_BORDER_RADIUS_PX,
+    BATCH_STATUS_HEIGHT_PX,
 )
 
 
@@ -88,7 +87,6 @@ def preview_current_batch_image(
     file_path = get_current_batch_path(files, index)
 
     return (
-        render_original_preview(file_path),
         render_overlay_preview(
             file_path=file_path,
             rectangles=rectangles,
@@ -96,7 +94,13 @@ def preview_current_batch_image(
             grid_size=grid_size,
             grid_label_size=grid_label_size,
         ),
-        render_censored_preview(file_path, rectangles),
+        render_censored_preview(
+            file_path=file_path,
+            rectangles=rectangles,
+            show_grid=show_grid,
+            grid_size=grid_size,
+            grid_label_size=grid_label_size,
+        ),
     )
 
 
@@ -104,7 +108,7 @@ def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
     file_paths = get_uploaded_file_paths(files)
     rectangles: list[dict] = []
     index = 0
-    original, overlay, anonymized = preview_current_batch_image(
+    original, anonymized = preview_current_batch_image(
         file_paths,
         index,
         rectangles,
@@ -131,7 +135,6 @@ def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
         DEFAULT_RECTANGLE_HEIGHT,
         "[]",
         original,
-        overlay,
         anonymized,
         batch_status(file_paths, index),
         gr.update(value=file_paths),
@@ -165,7 +168,7 @@ def navigate_batch(
         else:
             index = current
 
-    original, overlay, anonymized = preview_current_batch_image(
+    original, anonymized = preview_current_batch_image(
         files,
         index,
         rectangles,
@@ -177,7 +180,6 @@ def navigate_batch(
     return (
         index,
         original,
-        overlay,
         anonymized,
         inspect_current_uploaded_image_html(files, index),
         batch_status(files, index),
@@ -208,7 +210,7 @@ def handle_add_rectangle(
     choices = rectangle_choices(updated)
     selected = choices[-1] if choices else None
 
-    original, overlay, anonymized = preview_current_batch_image(
+    original, anonymized = preview_current_batch_image(
         files,
         index,
         updated,
@@ -222,9 +224,8 @@ def handle_add_rectangle(
         gr.update(choices=choices, value=selected),
         format_rectangles(updated),
         original,
-        overlay,
         anonymized,
-        gr.update(selected="overlay"),
+        gr.update(selected="original"),
     )
 
 
@@ -244,7 +245,7 @@ def handle_update_rectangle(
     rectangle_index = selected_rectangle_index(label)
     updated = update_rectangle(rectangles, rectangle_index, x, y, width, height)
 
-    original, overlay, anonymized = preview_current_batch_image(
+    original, anonymized = preview_current_batch_image(
         files,
         index,
         updated,
@@ -257,7 +258,6 @@ def handle_update_rectangle(
         updated,
         format_rectangles(updated),
         original,
-        overlay,
         anonymized,
     )
 
@@ -277,7 +277,7 @@ def handle_delete_rectangle(
     selected = choices[min(rectangle_index or 0, len(choices) - 1)] if choices else None
     x, y, width, height = get_rectangle_values(updated, selected)
 
-    original, overlay, anonymized = preview_current_batch_image(
+    original, anonymized = preview_current_batch_image(
         files,
         index,
         updated,
@@ -295,7 +295,6 @@ def handle_delete_rectangle(
         height,
         format_rectangles(updated),
         original,
-        overlay,
         anonymized,
     )
 
