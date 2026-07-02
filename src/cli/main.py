@@ -1,6 +1,50 @@
 from __future__ import annotations
 
 import argparse
+import ast
+from typing import TypeAlias
+
+Rect: TypeAlias = tuple[int, int, int, int]
+
+
+def parse_rects(raw_rects: str | None) -> list[Rect]:
+    if raw_rects is None or raw_rects.strip() == "":
+        return []
+
+    value = raw_rects.strip()
+
+    if value.startswith("["):
+        try:
+            parsed = ast.literal_eval(value)
+        except (SyntaxError, ValueError) as exc:
+            raise argparse.ArgumentTypeError(
+                '--rects must be "x1,y1,x2,y2" or "[[x1,y1,x2,y2],[...]]".'
+            ) from exc
+
+        if not isinstance(parsed, list):
+            raise argparse.ArgumentTypeError("--rects list format must be a list.")
+
+        rects = parsed
+    else:
+        rects = [value.split(",")]
+
+    normalized: list[Rect] = []
+
+    for rect in rects:
+        if not isinstance(rect, (list, tuple)) or len(rect) != 4:
+            raise argparse.ArgumentTypeError("Each rectangle must contain exactly 4 values: x1,y1,x2,y2.")
+
+        try:
+            x1, y1, x2, y2 = [int(v) for v in rect]
+        except (TypeError, ValueError) as exc:
+            raise argparse.ArgumentTypeError("Rectangle values must be integers.") from exc
+
+        if x2 <= x1 or y2 <= y1:
+            raise argparse.ArgumentTypeError("Rectangle coordinates must satisfy x2 > x1 and y2 > y1.")
+
+        normalized.append((x1, y1, x2, y2))
+
+    return normalized
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -29,10 +73,15 @@ def main() -> int:
     if args.workers <= 0:
         parser.error("--workers must be a positive integer.")
 
+    try:
+        rects = parse_rects(args.rects)
+    except argparse.ArgumentTypeError as exc:
+        parser.error(str(exc))
+
     print("Clinical Image Anonymizer CLI")
     print(f"Input     : {args.input}")
     print(f"Output    : {args.output}")
-    print(f"Rects     : {args.rects}")
+    print(f"Rects     : {rects}")
     print(f"Workers   : {args.workers}")
     print(f"Recursive : {args.recursive}")
     print(f"Dry run   : {args.dry_run}")
