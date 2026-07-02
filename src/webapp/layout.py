@@ -3,6 +3,7 @@ from __future__ import annotations
 import gradio as gr
 
 from src.webapp.event_registry import register_callbacks
+from src.webapp.ui_components import StateComponents, UIComponents
 from src.webapp.layout_components import build_viewer_workspace
 from src.webapp.panels.export_panel import build_export_panel
 from src.webapp.panels.upload_panel import build_initial_upload_panel
@@ -292,11 +293,11 @@ def handle_grid_change(files, index, rectangles, show_grid, grid_size, grid_labe
 
 
 def build_main_layout():
-    components = {
-        "files_state": gr.State([]),
-        "rectangle_state": gr.State([]),
-        "batch_index_state": gr.State(0),
-    }
+    state_components = StateComponents(
+        files_state=gr.State([]),
+        rectangle_state=gr.State([]),
+        batch_index_state=gr.State(0),
+    )
 
     initial_upload_components = build_initial_upload_panel()
     export_components = build_export_panel()
@@ -304,13 +305,11 @@ def build_main_layout():
         initial_batch_status_html=batch_status(None, None),
     )
 
-    components.update(
-        {
-            "initial_upload_group": initial_upload_components["upload_group"],
-            "initial_batch_files": initial_upload_components["batch_files"],
-            **export_components,
-            **workspace_components,
-        }
+    components = UIComponents.from_component_maps(
+        state=state_components,
+        initial_upload_components=initial_upload_components,
+        export_components=export_components,
+        workspace_components=workspace_components,
     )
 
     register_callbacks(
@@ -323,33 +322,4 @@ def build_main_layout():
         handle_delete_rectangle=handle_delete_rectangle,
     )
 
-    return {
-        "files_state": components["files_state"],
-        "initial_batch_files": components["initial_batch_files"],
-        "side_batch_files": components["side_batch_files"],
-        "export_group": components["export_group"],
-        "viewer_group": components["viewer_group"],
-        "batch_index_state": components["batch_index_state"],
-        "original_preview": components["original_preview"],
-        "overlay_preview": components["overlay_preview"],
-        "anonymized_preview": components["anonymized_preview"],
-        "batch_position": components["batch_position"],
-        "current_metadata_html": components["current_metadata_html"],
-        "rectangle_state": components["rectangle_state"],
-        "add_rectangle_button": components["add_rectangle_button"],
-        "delete_rectangle_button": components["delete_rectangle_button"],
-        "rectangle_selector": components["rectangle_selector"],
-        "x_input": components["x_input"],
-        "y_input": components["y_input"],
-        "width_input": components["width_input"],
-        "height_input": components["height_input"],
-        "update_rectangle_button": components["update_rectangle_button"],
-        "show_grid_checkbox": components["show_grid_checkbox"],
-        "grid_size_input": components["grid_size_input"],
-        "grid_label_size_input": components["grid_label_size_input"],
-        "rectangles_json": components["rectangles_json"],
-        "export_output_folder": components["export_output_folder"],
-        "export_name_prefix": components["export_name_prefix"],
-        "export_randomize_order": components["export_randomize_order"],
-        "export_button": components["export_button"],
-    }
+    return components.public_component_map()

@@ -6,6 +6,7 @@ from typing import Any
 import gradio as gr
 
 from src.webapp.rectangle_state import get_rectangle_values
+from src.webapp.ui_components import UIComponents
 
 
 NAVIGATION_DIRECTIONS = {
@@ -16,158 +17,129 @@ NAVIGATION_DIRECTIONS = {
 }
 
 
-def _workspace_upload_inputs(components: dict[str, Any], file_component: Any) -> list[Any]:
+def _workspace_upload_inputs(components: UIComponents, file_component: Any) -> list[Any]:
     return [
         file_component,
-        components["show_grid_checkbox"],
-        components["grid_size_input"],
-        components["grid_label_size_input"],
+        components.viewer.show_grid_checkbox,
+        components.viewer.grid_size_input,
+        components.viewer.grid_label_size_input,
     ]
 
 
-def _workspace_upload_outputs(components: dict[str, Any]) -> list[Any]:
+def _workspace_upload_outputs(components: UIComponents) -> list[Any]:
     return [
-        components["files_state"],
-        components["rectangle_state"],
-        components["batch_index_state"],
-        components["initial_upload_group"],
-        components["export_group"],
-        components["viewer_group"],
-        components["current_metadata_html"],
-        components["rectangle_selector"],
-        components["x_input"],
-        components["y_input"],
-        components["width_input"],
-        components["height_input"],
-        components["rectangles_json"],
-        components["original_preview"],
-        components["overlay_preview"],
-        components["anonymized_preview"],
-        components["batch_position"],
-        components["side_batch_files"],
+        components.state.files_state,
+        components.state.rectangle_state,
+        components.state.batch_index_state,
+        components.upload.initial_upload_group,
+        components.export.export_group,
+        components.viewer.viewer_group,
+        components.metadata.current_metadata_html,
+        components.rectangle.rectangle_selector,
+        components.rectangle.x_input,
+        components.rectangle.y_input,
+        components.rectangle.width_input,
+        components.rectangle.height_input,
+        components.rectangle.rectangles_json,
+        components.viewer.original_preview,
+        components.viewer.overlay_preview,
+        components.viewer.anonymized_preview,
+        components.viewer.batch_position,
+        components.upload.side_batch_files,
     ]
 
 
-def _navigation_inputs(components: dict[str, Any]) -> list[Any]:
+def _shared_preview_inputs(components: UIComponents) -> list[Any]:
     return [
-        components["files_state"],
-        components["batch_index_state"],
-        components["rectangle_state"],
-        components["show_grid_checkbox"],
-        components["grid_size_input"],
-        components["grid_label_size_input"],
+        components.state.files_state,
+        components.state.batch_index_state,
+        components.state.rectangle_state,
+        components.viewer.show_grid_checkbox,
+        components.viewer.grid_size_input,
+        components.viewer.grid_label_size_input,
     ]
 
 
-def _navigation_outputs(components: dict[str, Any]) -> list[Any]:
+def _navigation_outputs(components: UIComponents) -> list[Any]:
     return [
-        components["batch_index_state"],
-        components["original_preview"],
-        components["overlay_preview"],
-        components["anonymized_preview"],
-        components["current_metadata_html"],
-        components["batch_position"],
+        components.state.batch_index_state,
+        *components.viewer.preview_outputs,
+        components.metadata.current_metadata_html,
+        components.viewer.batch_position,
     ]
 
 
-def _grid_inputs(components: dict[str, Any]) -> list[Any]:
+def _add_rectangle_inputs(components: UIComponents) -> list[Any]:
     return [
-        components["files_state"],
-        components["batch_index_state"],
-        components["rectangle_state"],
-        components["show_grid_checkbox"],
-        components["grid_size_input"],
-        components["grid_label_size_input"],
+        components.state.rectangle_state,
+        components.state.files_state,
+        components.state.batch_index_state,
+        components.viewer.show_grid_checkbox,
+        components.viewer.grid_size_input,
+        components.viewer.grid_label_size_input,
     ]
 
 
-def _preview_outputs(components: dict[str, Any]) -> list[Any]:
+def _add_rectangle_outputs(components: UIComponents) -> list[Any]:
     return [
-        components["original_preview"],
-        components["overlay_preview"],
-        components["anonymized_preview"],
+        components.state.rectangle_state,
+        components.rectangle.rectangle_selector,
+        components.rectangle.rectangles_json,
+        *components.viewer.preview_outputs,
+        components.viewer.image_tabs,
     ]
 
 
-def _add_rectangle_inputs(components: dict[str, Any]) -> list[Any]:
+def _update_rectangle_inputs(components: UIComponents) -> list[Any]:
     return [
-        components["rectangle_state"],
-        components["files_state"],
-        components["batch_index_state"],
-        components["show_grid_checkbox"],
-        components["grid_size_input"],
-        components["grid_label_size_input"],
+        components.state.rectangle_state,
+        components.rectangle.rectangle_selector,
+        *components.rectangle.coordinate_inputs,
+        components.state.files_state,
+        components.state.batch_index_state,
+        components.viewer.show_grid_checkbox,
+        components.viewer.grid_size_input,
+        components.viewer.grid_label_size_input,
     ]
 
 
-def _add_rectangle_outputs(components: dict[str, Any]) -> list[Any]:
+def _update_rectangle_outputs(components: UIComponents) -> list[Any]:
     return [
-        components["rectangle_state"],
-        components["rectangle_selector"],
-        components["rectangles_json"],
-        components["original_preview"],
-        components["overlay_preview"],
-        components["anonymized_preview"],
-        components["image_tabs"],
+        components.state.rectangle_state,
+        components.rectangle.rectangles_json,
+        *components.viewer.preview_outputs,
     ]
 
 
-def _update_rectangle_inputs(components: dict[str, Any]) -> list[Any]:
+def _delete_rectangle_inputs(components: UIComponents) -> list[Any]:
     return [
-        components["rectangle_state"],
-        components["rectangle_selector"],
-        components["x_input"],
-        components["y_input"],
-        components["width_input"],
-        components["height_input"],
-        components["files_state"],
-        components["batch_index_state"],
-        components["show_grid_checkbox"],
-        components["grid_size_input"],
-        components["grid_label_size_input"],
+        components.state.rectangle_state,
+        components.rectangle.rectangle_selector,
+        components.state.files_state,
+        components.state.batch_index_state,
+        components.viewer.show_grid_checkbox,
+        components.viewer.grid_size_input,
+        components.viewer.grid_label_size_input,
     ]
 
 
-def _update_rectangle_outputs(components: dict[str, Any]) -> list[Any]:
+def _delete_rectangle_outputs(components: UIComponents) -> list[Any]:
     return [
-        components["rectangle_state"],
-        components["rectangles_json"],
-        components["original_preview"],
-        components["overlay_preview"],
-        components["anonymized_preview"],
+        components.state.rectangle_state,
+        components.rectangle.rectangle_selector,
+        *components.rectangle.coordinate_inputs,
+        components.rectangle.rectangles_json,
+        *components.viewer.preview_outputs,
     ]
 
 
-def _delete_rectangle_inputs(components: dict[str, Any]) -> list[Any]:
-    return [
-        components["rectangle_state"],
-        components["rectangle_selector"],
-        components["files_state"],
-        components["batch_index_state"],
-        components["show_grid_checkbox"],
-        components["grid_size_input"],
-        components["grid_label_size_input"],
-    ]
-
-
-def _delete_rectangle_outputs(components: dict[str, Any]) -> list[Any]:
-    return [
-        components["rectangle_state"],
-        components["rectangle_selector"],
-        components["x_input"],
-        components["y_input"],
-        components["width_input"],
-        components["height_input"],
-        components["rectangles_json"],
-        components["original_preview"],
-        components["overlay_preview"],
-        components["anonymized_preview"],
-    ]
+def _navigation_button(components: UIComponents, button_key: str) -> Any:
+    return getattr(components.viewer, button_key)
 
 
 def register_callbacks(
     *,
-    components: dict[str, Any],
+    components: UIComponents,
     handle_workspace_upload: Callable[..., Any],
     navigate_batch: Callable[..., Any],
     handle_grid_change: Callable[..., Any],
@@ -177,8 +149,8 @@ def register_callbacks(
 ) -> None:
     """Wire Gradio UI events without owning callback implementation logic."""
     for file_component in (
-        components["initial_batch_files"],
-        components["side_batch_files"],
+        components.upload.initial_batch_files,
+        components.upload.side_batch_files,
     ):
         file_component.change(
             fn=handle_workspace_upload,
@@ -187,7 +159,7 @@ def register_callbacks(
         )
 
     for button_key, direction in NAVIGATION_DIRECTIONS.items():
-        components[button_key].click(
+        _navigation_button(components, button_key).click(
             fn=lambda files, index, rectangles, show_grid, grid_size, grid_label_size, direction=direction: navigate_batch(
                 files,
                 index,
@@ -197,51 +169,49 @@ def register_callbacks(
                 grid_size,
                 grid_label_size,
             ),
-            inputs=_navigation_inputs(components),
+            inputs=_shared_preview_inputs(components),
             outputs=_navigation_outputs(components),
         )
 
-    components["show_grid_checkbox"].change(
+    components.viewer.show_grid_checkbox.change(
         fn=handle_grid_change,
-        inputs=_grid_inputs(components),
-        outputs=_preview_outputs(components),
+        inputs=_shared_preview_inputs(components),
+        outputs=components.viewer.preview_outputs,
     ).then(
         fn=lambda: gr.update(selected="overlay"),
         inputs=None,
-        outputs=components["image_tabs"],
+        outputs=components.viewer.image_tabs,
     )
 
-    for grid_component_key in ("grid_size_input", "grid_label_size_input"):
-        components[grid_component_key].change(
+    for grid_component in (
+        components.viewer.grid_size_input,
+        components.viewer.grid_label_size_input,
+    ):
+        grid_component.change(
             fn=handle_grid_change,
-            inputs=_grid_inputs(components),
-            outputs=_preview_outputs(components),
+            inputs=_shared_preview_inputs(components),
+            outputs=components.viewer.preview_outputs,
         )
 
-    components["add_rectangle_button"].click(
+    components.rectangle.add_rectangle_button.click(
         fn=handle_add_rectangle,
         inputs=_add_rectangle_inputs(components),
         outputs=_add_rectangle_outputs(components),
     )
 
-    components["rectangle_selector"].change(
+    components.rectangle.rectangle_selector.change(
         fn=get_rectangle_values,
-        inputs=[components["rectangle_state"], components["rectangle_selector"]],
-        outputs=[
-            components["x_input"],
-            components["y_input"],
-            components["width_input"],
-            components["height_input"],
-        ],
+        inputs=[components.state.rectangle_state, components.rectangle.rectangle_selector],
+        outputs=components.rectangle.coordinate_inputs,
     )
 
-    components["update_rectangle_button"].click(
+    components.rectangle.update_rectangle_button.click(
         fn=handle_update_rectangle,
         inputs=_update_rectangle_inputs(components),
         outputs=_update_rectangle_outputs(components),
     )
 
-    components["delete_rectangle_button"].click(
+    components.rectangle.delete_rectangle_button.click(
         fn=handle_delete_rectangle,
         inputs=_delete_rectangle_inputs(components),
         outputs=_delete_rectangle_outputs(components),
