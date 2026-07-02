@@ -8,7 +8,17 @@
     --cia-top-panel-height: 860px;
     --cia-bottom-panel-height: 700px;
     --cia-json-height: 415px;
-    --cia-upload-list-height: 570px;
+    --cia-json-inner-offset: 40px;
+
+    /* 1. Initial upload card: about 40% larger than the original 760px card. */
+    --cia-initial-upload-width: 1064px;
+    --cia-initial-upload-min-height: 230px;
+
+    /* 2. Metadata: reserve enough room so the outer card never scrolls. */
+    --cia-metadata-inner-offset: 74px;
+
+    /* 4. Upload list: reserve title, upload button area, footer, and card padding. */
+    --cia-upload-list-offset: 118px;
 }
 
 .gradio-container {
@@ -25,18 +35,20 @@
     margin-top: 0;
 }
 
-.cia-card {
-    border: 1px solid var(--cia-card-border);
-    border-radius: 12px;
-    padding: 14px;
-    background: var(--cia-card-bg);
-}
-
+.cia-card,
 .cia-tight-card {
     border: 1px solid var(--cia-card-border);
     border-radius: 12px;
-    padding: 10px 12px;
     background: var(--cia-card-bg);
+    box-sizing: border-box;
+}
+
+.cia-card {
+    padding: 14px;
+}
+
+.cia-tight-card {
+    padding: 10px 12px;
 }
 
 .cia-muted {
@@ -65,14 +77,27 @@
     color: #4ade80;
 }
 
+/* 1. Initial upload screen: larger first upload box. */
 .cia-initial-upload-card {
-    max-width: 760px;
+    width: var(--cia-initial-upload-width) !important;
+    max-width: var(--cia-initial-upload-width) !important;
+    min-height: var(--cia-initial-upload-min-height) !important;
     margin-top: 1rem;
+}
+
+.cia-initial-upload-card .cia-upload-dropzone,
+.cia-initial-upload-card .file-preview,
+.cia-initial-upload-card [data-testid="file-preview"] {
+    min-height: 150px !important;
+}
+
+.cia-top-panel,
+.cia-json-card {
+    overflow: hidden !important;
 }
 
 .cia-top-panel {
     height: var(--cia-top-panel-height) !important;
-    overflow: hidden !important;
 }
 
 .cia-top-panel > div,
@@ -80,16 +105,68 @@
     overflow: hidden !important;
 }
 
-.cia-bottom-panel {
+.cia-tight-card,
+.cia-tight-card * {
+    scrollbar-width: none !important;
+}
+
+.cia-tight-card::-webkit-scrollbar,
+.cia-tight-card *::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Hide browser number spinners. */
+input[type="number"] {
+    appearance: textfield !important;
+    -moz-appearance: textfield !important;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* 2. Metadata panel: outer card never scrolls. */
+.cia-bottom-panel:not(.cia-upload-panel) {
     height: var(--cia-bottom-panel-height) !important;
     max-height: var(--cia-bottom-panel-height) !important;
     overflow: hidden !important;
 }
 
-.cia-bottom-panel > div {
+.cia-bottom-panel:not(.cia-upload-panel) > div {
     height: 100% !important;
     max-height: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* 2. Metadata panel: only the inner rendered HTML content scrolls when needed. */
+.cia-bottom-panel:not(.cia-upload-panel) > div > div,
+.cia-bottom-panel:not(.cia-upload-panel) .prose,
+.cia-bottom-panel:not(.cia-upload-panel) .markdown-body {
+    height: calc(var(--cia-bottom-panel-height) - var(--cia-metadata-inner-offset)) !important;
+    max-height: calc(var(--cia-bottom-panel-height) - var(--cia-metadata-inner-offset)) !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. Metadata columns: original metadata wider, anonymized metadata narrower. */
+.cia-bottom-panel:not(.cia-upload-panel) h3 + div {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+}
+
+.cia-bottom-panel:not(.cia-upload-panel) h3 + div > div:first-child {
+    width: 70% !important;
+    flex: 0 0 70% !important;
+}
+
+.cia-bottom-panel:not(.cia-upload-panel) h3 + div > div:last-child {
+    width: 30% !important;
+    flex: 0 0 30% !important;
 }
 
 .cia-image-tabs img {
@@ -99,19 +176,63 @@
 .cia-json-card {
     height: var(--cia-json-height) !important;
     max-height: var(--cia-json-height) !important;
-    overflow: hidden !important;
 }
 
 .cia-json-card .cm-editor,
 .cia-json-card pre,
 .cia-json-card textarea {
-    height: calc(var(--cia-json-height) - 40px) !important;
-    max-height: calc(var(--cia-json-height) - 40px) !important;
+    height: calc(var(--cia-json-height) - var(--cia-json-inner-offset)) !important;
+    max-height: calc(var(--cia-json-height) - var(--cia-json-inner-offset)) !important;
     overflow-y: auto !important;
 }
 
-.cia-upload-panel .file-preview,
-.cia-upload-panel [data-testid="file-preview"] {
-    max-height: var(--cia-upload-list-height) !important;
+/* 4. Upload panel: outer panel never scrolls. */
+.cia-upload-panel {
+    height: var(--cia-bottom-panel-height) !important;
+    max-height: var(--cia-bottom-panel-height) !important;
+    overflow: hidden !important;
+}
+
+.cia-upload-panel > div {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* 4. Upload panel: make the Gradio Files component the single scroll container. */
+.cia-upload-panel .cia-upload-dropzone {
+    height: calc(var(--cia-bottom-panel-height) - var(--cia-upload-list-offset)) !important;
+    max-height: calc(var(--cia-bottom-panel-height) - var(--cia-upload-list-offset)) !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* 4. Upload panel: remove nested scroll areas inside the file component. */
+.cia-upload-panel .cia-upload-dropzone > div,
+.cia-upload-panel .cia-upload-dropzone .file-preview,
+.cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"],
+.cia-upload-panel .cia-upload-dropzone .file-preview ul,
+.cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"] ul {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+}
+
+.cia-upload-panel .cia-upload-dropzone > div::-webkit-scrollbar,
+.cia-upload-panel .cia-upload-dropzone .file-preview::-webkit-scrollbar,
+.cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"]::-webkit-scrollbar,
+.cia-upload-panel .cia-upload-dropzone .file-preview ul::-webkit-scrollbar,
+.cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"] ul::-webkit-scrollbar {
+    display: none !important;
+}
+
+.cia-upload-panel .cia-upload-dropzone > div,
+.cia-upload-panel .cia-upload-dropzone .file-preview,
+.cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"],
+.cia-upload-panel .cia-upload-dropzone .file-preview ul,
+.cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"] ul {
+    scrollbar-width: none !important;
 }
