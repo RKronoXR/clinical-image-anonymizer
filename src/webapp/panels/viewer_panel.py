@@ -51,23 +51,34 @@ def build_image_viewer_panel(
                 )
 
                 with gr.Row(equal_height=True):
+                    gr.HTML(
+                        "<div class='cia-inline-grid-label'>Grid square size in pixels</div>",
+                    )
+
                     grid_size_input = gr.Number(
                         label="Grid square size in pixels",
                         value=DEFAULT_GRID_SIZE,
                         precision=GRID_SIZE_PRECISION,
                         interactive=False,
-                        scale=1,
+                        show_label=False,
+                        scale=2,
                     )
+
+                    gr.HTML(
+                        "<div class='cia-inline-grid-label'>Grid number size</div>",
+                    )
+
                     grid_label_size_input = gr.Number(
                         label="Grid number size",
                         value=DEFAULT_GRID_LABEL_SIZE,
                         precision=GRID_LABEL_SIZE_PRECISION,
                         interactive=False,
-                        scale=1,
+                        show_label=False,
+                        scale=2,
                     )
+
                     update_grid_button = gr.Button(
                         value="Apply grid",
-                        variant="secondary",
                         interactive=False,
                         scale=1,
                     )

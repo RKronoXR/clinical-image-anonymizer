@@ -7,7 +7,7 @@
 
     --cia-top-panel-height: 860px;
     --cia-bottom-panel-height: 700px;
-    --cia-json-height: 415px;
+    --cia-json-height: 500px;
     --cia-json-inner-offset: 40px;
 
     /* 1. Initial upload card: about 40% larger than the original 760px card. */
@@ -235,4 +235,39 @@ input[type="number"]::-webkit-inner-spin-button {
 .cia-upload-panel .cia-upload-dropzone .file-preview ul,
 .cia-upload-panel .cia-upload-dropzone [data-testid="file-preview"] ul {
     scrollbar-width: none !important;
+}
+
+.cia-bottom-panel:not(.cia-upload-panel) {
+    overflow-y: hidden !important;
+}
+
+.cia-bottom-panel:not(.cia-upload-panel) > div {
+    overflow-y: hidden !important;
+}
+
+.cia-bottom-panel:not(.cia-upload-panel) .prose {
+    overflow-y: auto !important;
+    scrollbar-gutter: auto !important;
+}
+
+.cia-bottom-panel:not(.cia-upload-panel) .prose::-webkit-scrollbar {
+    width: 0 !important;
+}
+
+.cia-inline-grid-label {
+    height: 56px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+}
+
+.cia-inline-grid-label p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
