@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import gradio as gr
 
-from src.webapp.layout_components import (
-    build_export_panel,
-    build_initial_upload_panel,
-    build_viewer_workspace,
-)
+from src.webapp.layout_components import build_viewer_workspace
+from src.webapp.panels.export_panel import build_export_panel
+from src.webapp.panels.upload_panel import build_initial_upload_panel
 from src.webapp.callbacks import (
     get_uploaded_file_paths,
     inspect_current_uploaded_image_html,
