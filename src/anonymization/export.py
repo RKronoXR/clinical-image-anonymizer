@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-from src.anonymization.mapping_csv import write_mapping_csv
 import random
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
 from PIL import Image, ImageDraw, ImageOps
+
+from src.anonymization.image_writer import (
+    safe_output_format,
+    save_without_metadata,
+)
 from src.anonymization.mapping_csv import write_mapping_csv
+
 
 ALL_IMAGES_FILENAME = "All_images"
 
@@ -73,7 +78,10 @@ def _rectangles_for_source(rectangles: list[dict] | None, source: Path) -> list[
     ]
 
 
-def apply_black_rectangles(image: Image.Image, rectangles: list[dict] | None) -> Image.Image:
+def apply_black_rectangles(
+    image: Image.Image,
+    rectangles: list[dict] | None,
+) -> Image.Image:
     output = image.convert("RGB").copy()
     draw = ImageDraw.Draw(output)
 
@@ -81,35 +89,6 @@ def apply_black_rectangles(image: Image.Image, rectangles: list[dict] | None) ->
         draw.rectangle(_rectangle_box(rectangle), fill=(0, 0, 0))
 
     return output
-
-
-def _safe_output_format(source: Path, image_format: str | None) -> str | None:
-    suffix = source.suffix.lower()
-    if suffix in {".jpg", ".jpeg"}:
-        return "JPEG"
-    if suffix in {".tif", ".tiff"}:
-        return "TIFF"
-    if suffix == ".png":
-        return "PNG"
-    return image_format
-
-
-def _save_without_metadata(image: Image.Image, destination: Path, image_format: str | None) -> None:
-    """Save an image without carrying source metadata into the output file."""
-    destination.parent.mkdir(parents=True, exist_ok=True)
-
-    clean_image = image.convert("RGB")
-    save_kwargs: dict = {}
-
-    if image_format == "JPEG":
-        save_kwargs["quality"] = 95
-        save_kwargs["optimize"] = True
-    elif image_format == "PNG":
-        save_kwargs["optimize"] = True
-    elif image_format == "TIFF":
-        save_kwargs["compression"] = "raw"
-
-    clean_image.save(destination, format=image_format, **save_kwargs)
 
 
 def _check_existing_outputs(plan: Iterable[ExportMapping], csv_path: Path) -> None:
@@ -136,6 +115,7 @@ def export_anonymized_images(
 
     plan = build_export_plan(image_paths, output, prefix, randomize)
     csv_path = output / csv_name
+
     if not overwrite:
         _check_existing_outputs(plan, csv_path)
 
@@ -143,10 +123,22 @@ def export_anonymized_images(
         with Image.open(item.source_path) as image:
             image = ImageOps.exif_transpose(image)
             image.load()
-            image_rectangles = _rectangles_for_source(rectangles, item.source_path)
+
+            image_rectangles = _rectangles_for_source(
+                rectangles,
+                item.source_path,
+            )
             anonymized = apply_black_rectangles(image, image_rectangles)
-            output_format = _safe_output_format(item.source_path, image.format)
-            _save_without_metadata(anonymized, item.output_path, output_format)
+
+            output_format = safe_output_format(
+                item.source_path,
+                image.format,
+            )
+            save_without_metadata(
+                anonymized,
+                item.output_path,
+                output_format,
+            )
 
     write_mapping_csv(plan, csv_path)
 
