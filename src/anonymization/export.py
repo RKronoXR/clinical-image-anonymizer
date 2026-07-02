@@ -15,7 +15,9 @@ from src.anonymization.mapping_csv import write_mapping_csv
 from src.anonymization.rectangle_draw import (
     apply_black_rectangles,
 )
-
+from src.anonymization.rectangle_filter import (
+    rectangles_for_source,
+)
 
 ALL_IMAGES_FILENAME = "All_images"
 
@@ -56,21 +58,6 @@ def build_export_plan(
 
     return plan
 
-def _rectangle_filename(rectangle: dict) -> str:
-    value = rectangle.get("filename") or rectangle.get("image_path") or ""
-    if value == ALL_IMAGES_FILENAME:
-        return ALL_IMAGES_FILENAME
-    return Path(str(value)).name
-
-
-def _rectangles_for_source(rectangles: list[dict] | None, source: Path) -> list[dict]:
-    source_name = source.name
-    return [
-        rectangle
-        for rectangle in rectangles or []
-        if _rectangle_filename(rectangle) in {ALL_IMAGES_FILENAME, source_name}
-    ]
-
 def _check_existing_outputs(plan: Iterable[ExportMapping], csv_path: Path) -> None:
     existing = [item.output_path for item in plan if item.output_path.exists()]
     if csv_path.exists():
@@ -104,7 +91,7 @@ def export_anonymized_images(
             image = ImageOps.exif_transpose(image)
             image.load()
 
-            image_rectangles = _rectangles_for_source(
+            image_rectangles = rectangles_for_source(
                 rectangles,
                 item.source_path,
             )
