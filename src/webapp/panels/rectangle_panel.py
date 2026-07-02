@@ -48,29 +48,34 @@ def build_rectangle_panel() -> dict[str, Any]:
 
             with gr.Row(equal_height=True):
                 width_input = gr.Number(
-                    label="W",
+                    label="Width",
                     value=DEFAULT_RECTANGLE_WIDTH,
                     precision=RECTANGLE_INPUT_PRECISION,
                 )
 
                 height_input = gr.Number(
-                    label="H",
+                    label="Height",
                     value=DEFAULT_RECTANGLE_HEIGHT,
                     precision=RECTANGLE_INPUT_PRECISION,
                 )
 
-            update_rectangle_button = gr.Button(
-                value="Update selected rectangle",
-                variant="secondary",
-                elem_classes=["cia-primary-action"],
-            )
-            delete_rectangle_button = gr.Button(value="Delete selected rectangle")
+            with gr.Row(equal_height=True):
+                update_rectangle_button = gr.Button(
+                    value="Update selected rectangle",
+                    variant="secondary",
+                    elem_classes=["cia-primary-action"],
+                )
+                delete_rectangle_button = gr.Button(
+                    value="Delete selected rectangle",
+                    variant="secondary",
+                )
 
             rectangles_json = gr.Code(
                 label="Rectangle coordinates",
                 language="json",
                 interactive=False,
                 value="[]",
+                lines=20,
                 elem_classes=["cia-json-card"],
             )
 

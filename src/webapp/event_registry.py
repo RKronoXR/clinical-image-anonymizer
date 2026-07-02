@@ -72,6 +72,7 @@ def _navigation_outputs(components: UIComponents) -> list[Any]:
 def _add_rectangle_inputs(components: UIComponents) -> list[Any]:
     return [
         components.state.rectangle_state,
+        *components.rectangle.coordinate_inputs,
         components.state.files_state,
         components.state.batch_index_state,
         components.viewer.show_grid_checkbox,

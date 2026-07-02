@@ -75,10 +75,27 @@ def inspect_uploaded_image(file: Any) -> str:
 
 def _format_metadata_block(title: str, metadata: dict[str, str]) -> str:
     content = json.dumps(metadata, indent=4, ensure_ascii=False, default=str)
+    technical_note = """
+        <div style="
+            margin-top:6px;
+            padding:6px 8px;
+            border-left:3px solid #5aa9e6;
+            background:rgba(90, 169, 230, 0.12);
+            border-radius:4px;
+            font-size:12px;
+            line-height:1.25;
+        ">
+            <strong>ℹ Technical note:</strong>
+            exported formats such as JPEG, TIFF, or PNG may add technical format metadata.
+            These fields do not contain patient-identifying information.
+        </div>
+    """ if title == "Anonymized Metadata" else ""
+
     return f"""
     <div style="width:50%; padding:8px;">
         <h4>{html.escape(title)}</h4>
         <pre style="white-space:pre-wrap;">{html.escape(content)}</pre>
+        {technical_note}
     </div>
     """
 

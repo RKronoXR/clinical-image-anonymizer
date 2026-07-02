@@ -184,8 +184,27 @@ def navigate_batch(
     )
 
 
-def handle_add_rectangle(rectangles, files, index, show_grid, grid_size, grid_label_size):
-    updated = add_rectangle(rectangles)
+def handle_add_rectangle(
+    rectangles,
+    x,
+    y,
+    width,
+    height,
+    files,
+    index,
+    show_grid,
+    grid_size,
+    grid_label_size,
+):
+    image_path = get_current_batch_path(files, index) or ""
+    updated = add_rectangle(
+        rectangles,
+        image_path=image_path,
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+    )
     choices = rectangle_choices(updated)
     selected = choices[-1] if choices else None
 
