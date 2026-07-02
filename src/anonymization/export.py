@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterable
 
 from PIL import Image, ImageDraw, ImageOps
-
+from src.anonymization.mapping_csv import write_mapping_csv
 
 ALL_IMAGES_FILENAME = "All_images"
 
@@ -129,13 +129,15 @@ def export_anonymized_images(
     prefix: str = "",
     randomize: bool = False,
     csv_name: str = "mapping.csv",
+    overwrite: bool = False,
 ) -> list[ExportMapping]:
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
 
     plan = build_export_plan(image_paths, output, prefix, randomize)
     csv_path = output / csv_name
-    _check_existing_outputs(plan, csv_path)
+    if not overwrite:
+        _check_existing_outputs(plan, csv_path)
 
     for item in plan:
         with Image.open(item.source_path) as image:
@@ -146,15 +148,6 @@ def export_anonymized_images(
             output_format = _safe_output_format(item.source_path, image.format)
             _save_without_metadata(anonymized, item.output_path, output_format)
 
-    with csv_path.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=["original_name", "new_name"])
-        writer.writeheader()
-        for item in plan:
-            writer.writerow(
-                {
-                    "original_name": item.original_name,
-                    "new_name": item.new_name,
-                }
-            )
+    write_mapping_csv(plan, csv_path)
 
     return plan

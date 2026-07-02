@@ -152,6 +152,7 @@ def main() -> int:
         print("\nRun summary:")
         print(f"Processed  : {summary.processed}")
         print(f"Failed     : {summary.failed}")
+        print(f"CSV report : {summary.csv_path}")
 
         if summary.errors:
             print("\nErrors:")
