@@ -45,7 +45,7 @@ def build_export_panel() -> dict[str, Any]:
                 elem_classes=["cia-primary-action"],
             )
 
-            gr.HTML(
+            export_status = gr.HTML(
                 """
                 <div class="cia-export-status">
                     <span class="cia-muted">Export status</span>
@@ -60,4 +60,5 @@ def build_export_panel() -> dict[str, Any]:
         "export_name_prefix": export_name_prefix,
         "export_randomize_order": export_randomize_order,
         "export_button": export_button,
+        "export_status": export_status,
     }

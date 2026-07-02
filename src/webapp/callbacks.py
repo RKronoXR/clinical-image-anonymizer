@@ -142,6 +142,17 @@ def inspect_uploaded_batch(files: Any) -> str:
     return "\n".join(sections)
 
 
+def format_export_status(message: str, is_error: bool = False) -> str:
+    color = "#ff6666" if is_error else "#43d17a"
+    symbol = "✗" if is_error else "✓"
+    return f"""
+    <div class="cia-export-status">
+        <span class="cia-muted">Export status</span>
+        <strong style="color:{color};">{symbol} {html.escape(message)}</strong>
+    </div>
+    """
+
+
 def handle_export_batch(
     files: Any,
     rectangles: list[dict] | None,
@@ -152,10 +163,10 @@ def handle_export_batch(
     file_paths = get_uploaded_file_paths(files)
 
     if not file_paths:
-        return "<span style='color:#ff6666'>✗ No images loaded.</span>"
+        return format_export_status("No images loaded.", is_error=True)
 
     if not output_folder or not str(output_folder).strip():
-        return "<span style='color:#ff6666'>✗ Output folder is required.</span>"
+        return format_export_status("Output folder is required.", is_error=True)
 
     try:
         exported = export_anonymized_images(
@@ -166,11 +177,10 @@ def handle_export_batch(
             randomize=bool(randomize),
         )
 
-        return (
-            "<span style='color:#43d17a'>"
-            f"✓ Export completed successfully. {len(exported)} images exported."
-            "</span>"
+        return format_export_status(
+            f"Export completed successfully. {len(exported)} images exported.",
+            is_error=False,
         )
 
     except Exception as exc:
-        return f"<span style='color:#ff6666'>✗ {html.escape(str(exc))}</span>"
+        return format_export_status(str(exc), is_error=True)

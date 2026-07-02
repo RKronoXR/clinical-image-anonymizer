@@ -292,14 +292,6 @@ def handle_grid_change(files, index, rectangles, show_grid, grid_size, grid_labe
     )
 
 
-def _get_export_component(component_map: dict, *names: str):
-    for name in names:
-        if name in component_map:
-            return component_map[name]
-    available = ", ".join(component_map.keys())
-    raise KeyError(f"Missing export component. Tried {names}. Available: {available}")
-
-
 def build_main_layout():
     state_components = StateComponents(
         files_state=gr.State([]),
@@ -330,36 +322,11 @@ def build_main_layout():
         handle_delete_rectangle=handle_delete_rectangle,
     )
 
-    export_button = _get_export_component(
-        export_components,
-        "export_button",
-        "export_anonymized_button",
-        "export_anonymized_images_button",
-    )
-    output_folder = _get_export_component(
-        export_components,
-        "output_folder",
-        "output_folder_input",
-    )
-    filename_prefix = _get_export_component(
-        export_components,
-        "filename_prefix",
-        "output_filename_prefix",
-        "output_filename_prefix_input",
-        "prefix_input",
-    )
-    randomize_output = _get_export_component(
-        export_components,
-        "randomize_output",
-        "randomize_output_order",
-        "randomize_output_image_order",
-        "randomize_checkbox",
-    )
-    export_status = _get_export_component(
-        export_components,
-        "export_status",
-        "export_status_html",
-    )
+    export_button = export_components["export_button"]
+    output_folder = export_components["export_output_folder"]
+    filename_prefix = export_components["export_name_prefix"]
+    randomize_output = export_components["export_randomize_order"]
+    export_status = export_components["export_status"]
 
     export_button.click(
         fn=handle_export_batch,
