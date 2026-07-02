@@ -18,6 +18,7 @@ from src.anonymization.rectangle_draw import (
 from src.anonymization.rectangle_filter import (
     rectangles_for_source,
 )
+from src.anonymization.export_plan import ExportMapping, build_export_plan
 
 ALL_IMAGES_FILENAME = "All_images"
 
