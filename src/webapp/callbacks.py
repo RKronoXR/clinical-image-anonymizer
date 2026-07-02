@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.anonymization.export import export_anonymized_images
 from src.anonymization.metadata import (
     inspect_image_metadata,
     preview_anonymized_metadata,
@@ -139,3 +140,37 @@ def inspect_uploaded_batch(files: Any) -> str:
         )
 
     return "\n".join(sections)
+
+
+def handle_export_batch(
+    files: Any,
+    rectangles: list[dict] | None,
+    output_folder: str,
+    prefix: str,
+    randomize: bool,
+) -> str:
+    file_paths = get_uploaded_file_paths(files)
+
+    if not file_paths:
+        return "<span style='color:#ff6666'>✗ No images loaded.</span>"
+
+    if not output_folder or not str(output_folder).strip():
+        return "<span style='color:#ff6666'>✗ Output folder is required.</span>"
+
+    try:
+        exported = export_anonymized_images(
+            image_paths=file_paths,
+            output_dir=Path(output_folder),
+            rectangles=rectangles or [],
+            prefix=prefix or "",
+            randomize=bool(randomize),
+        )
+
+        return (
+            "<span style='color:#43d17a'>"
+            f"✓ Export completed successfully. {len(exported)} images exported."
+            "</span>"
+        )
+
+    except Exception as exc:
+        return f"<span style='color:#ff6666'>✗ {html.escape(str(exc))}</span>"
