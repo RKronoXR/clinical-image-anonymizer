@@ -6,9 +6,9 @@
     --cia-primary-hover: #6d28d9;
 
     --cia-top-panel-height: 860px;
-    --cia-bottom-panel-height: 620px;
+    --cia-bottom-panel-height: 700px;
     --cia-json-height: 415px;
-    --cia-upload-list-height: 490px;
+    --cia-upload-list-height: 570px;
 }
 
 .gradio-container {
@@ -75,13 +75,20 @@
     overflow: hidden !important;
 }
 
+.cia-top-panel > div,
+.cia-tight-card > div {
+    overflow: hidden !important;
+}
+
 .cia-bottom-panel {
     height: var(--cia-bottom-panel-height) !important;
+    max-height: var(--cia-bottom-panel-height) !important;
     overflow: hidden !important;
 }
 
 .cia-bottom-panel > div {
     height: 100% !important;
+    max-height: 100% !important;
     overflow-y: auto !important;
 }
 
