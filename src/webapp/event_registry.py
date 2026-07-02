@@ -36,6 +36,7 @@ def _workspace_upload_outputs(components: UIComponents) -> list[Any]:
         components.viewer.viewer_group,
         components.metadata.current_metadata_html,
         components.rectangle.rectangle_selector,
+        components.rectangle.apply_all_images_checkbox,
         components.rectangle.x_input,
         components.rectangle.y_input,
         components.rectangle.width_input,
@@ -71,6 +72,7 @@ def _add_rectangle_inputs(components: UIComponents) -> list[Any]:
     return [
         components.state.rectangle_state,
         *components.rectangle.coordinate_inputs,
+        components.rectangle.apply_all_images_checkbox,
         components.state.files_state,
         components.state.batch_index_state,
         components.viewer.show_grid_checkbox,

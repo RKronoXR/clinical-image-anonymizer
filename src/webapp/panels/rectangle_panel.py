@@ -17,7 +17,7 @@ from src.webapp.ui_constants import (
 
 
 def build_rectangle_panel() -> dict[str, Any]:
-    """Build global rectangle controls."""
+    """Build rectangle controls."""
     with gr.Column(
         scale=RIGHT_COLUMN_SCALE,
         min_width=RIGHT_COLUMN_MIN_WIDTH,
@@ -25,9 +25,7 @@ def build_rectangle_panel() -> dict[str, Any]:
     ):
         with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
             with gr.Row(equal_height=True):
-                gr.Markdown(
-                    "### Rectangles <span class='cia-muted'>(global for all images)</span>"
-                )
+                gr.Markdown("### Rectangles")
                 add_rectangle_button = gr.Button(
                     value="Add rectangle",
                     variant="secondary",
@@ -35,12 +33,20 @@ def build_rectangle_panel() -> dict[str, Any]:
                     elem_classes=["cia-primary-action"],
                 )
 
-            rectangle_selector = gr.Dropdown(
-                label="Selected rectangle",
-                choices=[],
-                value=None,
-                interactive=True,
-            )
+            with gr.Row(equal_height=True):
+                rectangle_selector = gr.Dropdown(
+                    label="Selected rectangle",
+                    choices=[],
+                    value=None,
+                    interactive=True,
+                    scale=2,
+                )
+                apply_all_images_checkbox = gr.Checkbox(
+                    label="Apply to all images",
+                    value=True,
+                    interactive=True,
+                    scale=1,
+                )
 
             with gr.Row(equal_height=True):
                 x_input = gr.Number(label="X", value=0, precision=RECTANGLE_INPUT_PRECISION)
@@ -83,6 +89,7 @@ def build_rectangle_panel() -> dict[str, Any]:
         "add_rectangle_button": add_rectangle_button,
         "delete_rectangle_button": delete_rectangle_button,
         "rectangle_selector": rectangle_selector,
+        "apply_all_images_checkbox": apply_all_images_checkbox,
         "x_input": x_input,
         "y_input": y_input,
         "width_input": width_input,

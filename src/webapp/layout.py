@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import gradio as gr
 
 from src.webapp.callbacks import (
@@ -16,6 +18,7 @@ from src.webapp.preview_rendering import (
     render_overlay_preview,
 )
 from src.webapp.rectangle_state import (
+    ALL_IMAGES_FILENAME,
     DEFAULT_RECTANGLE_HEIGHT,
     DEFAULT_RECTANGLE_WIDTH,
     add_rectangle,
@@ -23,6 +26,7 @@ from src.webapp.rectangle_state import (
     format_rectangles,
     get_rectangle_values,
     rectangle_choices,
+    rectangles_for_filename,
     selected_rectangle_index,
     update_rectangle,
 )
@@ -41,6 +45,13 @@ def get_current_batch_path(files, index: int | float | None) -> str | None:
 
     safe_index = max(0, min(int(index or 0), len(file_paths) - 1))
     return file_paths[safe_index]
+
+
+def get_current_batch_filename(files, index: int | float | None) -> str | None:
+    file_path = get_current_batch_path(files, index)
+    if file_path is None:
+        return None
+    return Path(file_path).name
 
 
 def batch_status(files, index: int | float | None) -> str:
@@ -85,18 +96,20 @@ def preview_current_batch_image(
     grid_label_size,
 ):
     file_path = get_current_batch_path(files, index)
+    filename = Path(file_path).name if file_path else None
+    visible_rectangles = rectangles_for_filename(rectangles, filename)
 
     return (
         render_overlay_preview(
             file_path=file_path,
-            rectangles=rectangles,
+            rectangles=visible_rectangles,
             show_grid=show_grid,
             grid_size=grid_size,
             grid_label_size=grid_label_size,
         ),
         render_censored_preview(
             file_path=file_path,
-            rectangles=rectangles,
+            rectangles=visible_rectangles,
             show_grid=show_grid,
             grid_size=grid_size,
             grid_label_size=grid_label_size,
@@ -129,6 +142,7 @@ def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
         gr.update(visible=has_files),
         gr.update(visible=has_files, value=metadata_html),
         gr.update(choices=[], value=None),
+        gr.update(value=True),
         0,
         0,
         DEFAULT_RECTANGLE_WIDTH,
@@ -192,16 +206,18 @@ def handle_add_rectangle(
     y,
     width,
     height,
+    apply_all_images,
     files,
     index,
     show_grid,
     grid_size,
     grid_label_size,
 ):
-    image_path = get_current_batch_path(files, index) or ""
+    current_filename = get_current_batch_filename(files, index) or ""
+    rectangle_filename = ALL_IMAGES_FILENAME if apply_all_images else current_filename
     updated = add_rectangle(
         rectangles,
-        image_path=image_path,
+        filename=rectangle_filename,
         x=x,
         y=y,
         width=width,
@@ -344,7 +360,7 @@ def build_main_layout():
     output_folder = export_components["export_output_folder"]
     filename_prefix = export_components["export_name_prefix"]
     randomize_output = export_components["export_randomize_order"]
-    export_status = export_components["export_status"]
+    export_status = export_components.get("export_status")
 
     export_button.click(
         fn=handle_export_batch,
@@ -355,7 +371,7 @@ def build_main_layout():
             filename_prefix,
             randomize_output,
         ],
-        outputs=[export_status],
+        outputs=[export_status] if export_status is not None else None,
     )
 
     return components.public_component_map()

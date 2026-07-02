@@ -9,6 +9,9 @@ from typing import Iterable
 from PIL import Image, ImageDraw, ImageOps
 
 
+ALL_IMAGES_FILENAME = "All_images"
+
+
 @dataclass(frozen=True)
 class ExportMapping:
     original_name: str
@@ -52,6 +55,22 @@ def _rectangle_box(rectangle: dict) -> tuple[int, int, int, int]:
     width = int(rectangle["width"])
     height = int(rectangle["height"])
     return x, y, x + width, y + height
+
+
+def _rectangle_filename(rectangle: dict) -> str:
+    value = rectangle.get("filename") or rectangle.get("image_path") or ""
+    if value == ALL_IMAGES_FILENAME:
+        return ALL_IMAGES_FILENAME
+    return Path(str(value)).name
+
+
+def _rectangles_for_source(rectangles: list[dict] | None, source: Path) -> list[dict]:
+    source_name = source.name
+    return [
+        rectangle
+        for rectangle in rectangles or []
+        if _rectangle_filename(rectangle) in {ALL_IMAGES_FILENAME, source_name}
+    ]
 
 
 def apply_black_rectangles(image: Image.Image, rectangles: list[dict] | None) -> Image.Image:
@@ -122,7 +141,8 @@ def export_anonymized_images(
         with Image.open(item.source_path) as image:
             image = ImageOps.exif_transpose(image)
             image.load()
-            anonymized = apply_black_rectangles(image, rectangles or [])
+            image_rectangles = _rectangles_for_source(rectangles, item.source_path)
+            anonymized = apply_black_rectangles(image, image_rectangles)
             output_format = _safe_output_format(item.source_path, image.format)
             _save_without_metadata(anonymized, item.output_path, output_format)
 

@@ -99,6 +99,9 @@ def render_censored_preview(
     file_path: str | Path | None,
     rectangles: list[dict] | None,
     color: tuple[int, int, int] = DEFAULT_CENSOR_COLOR,
+    show_grid: bool = False,
+    grid_size: int | float | None = 100,
+    grid_label_size: int | float | None = 12,
 ) -> Image.Image | None:
     image = load_preview_image(file_path)
     if image is None:
@@ -114,5 +117,8 @@ def render_censored_preview(
             [x, y, x + width, y + height],
             fill=color,
         )
+
+    if show_grid:
+        image = draw_grid(image, grid_size, grid_label_size)
 
     return image

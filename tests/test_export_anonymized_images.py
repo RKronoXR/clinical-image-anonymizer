@@ -119,3 +119,31 @@ def test_exported_tiff_has_no_private_metadata(tmp_path: Path) -> None:
     export_anonymized_images([input_path], output_dir, [], prefix="Anon_", randomize=False)
     metadata = inspect_image_metadata(output_dir / "Anon_0001.tif")
     assert_no_private_metadata(metadata)
+
+
+def test_export_applies_rectangles_by_filename_and_all_images(tmp_path: Path) -> None:
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+
+    create_test_image(input_dir / "img1.png")
+    create_test_image(input_dir / "img2.png")
+
+    export_anonymized_images(
+        image_paths=[input_dir / "img1.png", input_dir / "img2.png"],
+        output_dir=output_dir,
+        rectangles=[
+            {"filename": "img1.png", "x": 10, "y": 10, "width": 5, "height": 5},
+            {"filename": "All_images", "x": 20, "y": 20, "width": 5, "height": 5},
+        ],
+        prefix="Anon_",
+        randomize=False,
+    )
+
+    with Image.open(output_dir / "Anon_0001.png") as img1:
+        assert img1.convert("RGB").getpixel((12, 12)) == (0, 0, 0)
+        assert img1.convert("RGB").getpixel((22, 22)) == (0, 0, 0)
+
+    with Image.open(output_dir / "Anon_0002.png") as img2:
+        assert img2.convert("RGB").getpixel((12, 12)) == (255, 255, 255)
+        assert img2.convert("RGB").getpixel((22, 22)) == (0, 0, 0)
