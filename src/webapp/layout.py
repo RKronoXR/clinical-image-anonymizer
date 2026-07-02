@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import gradio as gr
 
+from src.webapp.layout_components import (
+    build_export_panel,
+    build_initial_upload_panel,
+    build_viewer_workspace,
+)
 from src.webapp.callbacks import (
     get_uploaded_file_paths,
     inspect_current_uploaded_image_html,
@@ -286,180 +291,49 @@ def build_main_layout():
     rectangle_state = gr.State([])
     batch_index_state = gr.State(0)
 
-    with gr.Group(elem_classes=["cia-card", "cia-initial-upload-card"]) as initial_upload_group:
-        gr.Markdown("### Upload images")
-        initial_batch_files = gr.Files(
-            label="Drag and drop images here or click to browse",
-            file_types=["image"],
-            elem_classes=["cia-upload-dropzone"],
-        )
-        gr.Markdown(
-            "Supported formats: JPG, PNG, TIFF, DICOM",
-            elem_classes=["cia-muted"],
-        )
+    initial_upload_components = build_initial_upload_panel()
+    export_components = build_export_panel()
+    workspace_components = build_viewer_workspace(
+        initial_batch_status_html=batch_status(None, None),
+    )
 
-    with gr.Group(visible=False, elem_classes=["cia-card"]) as export_group:
-        with gr.Row(equal_height=True):
-            export_output_folder = gr.Textbox(
-                label="Output folder",
-                value="outputs/anonymized",
-                interactive=True,
-                scale=4,
-            )
+    initial_upload_group = initial_upload_components["upload_group"]
+    initial_batch_files = initial_upload_components["batch_files"]
 
-            export_name_prefix = gr.Textbox(
-                label="Output filename prefix",
-                value="Anonymized_",
-                interactive=True,
-                scale=3,
-            )
+    export_group = export_components["export_group"]
+    export_output_folder = export_components["export_output_folder"]
+    export_name_prefix = export_components["export_name_prefix"]
+    export_randomize_order = export_components["export_randomize_order"]
+    export_button = export_components["export_button"]
 
-            export_randomize_order = gr.Checkbox(
-                label="Randomize output image order",
-                value=False,
-                scale=2,
-            )
+    viewer_group = workspace_components["viewer_group"]
+    image_tabs = workspace_components["image_tabs"]
+    original_preview = workspace_components["original_preview"]
+    overlay_preview = workspace_components["overlay_preview"]
+    anonymized_preview = workspace_components["anonymized_preview"]
 
-            export_button = gr.Button(
-                value="Export anonymized images",
-                scale=2,
-                variant="secondary",
-                elem_classes=["cia-primary-action"],
-            )
+    first_button = workspace_components["first_button"]
+    previous_button = workspace_components["previous_button"]
+    batch_position = workspace_components["batch_position"]
+    next_button = workspace_components["next_button"]
+    last_button = workspace_components["last_button"]
 
-            gr.HTML(
-                """
-                <div class="cia-export-status">
-                    <span class="cia-muted">Export status</span>
-                    <strong>✓ Ready to export</strong>
-                </div>
-                """,
-            )
+    show_grid_checkbox = workspace_components["show_grid_checkbox"]
+    grid_size_input = workspace_components["grid_size_input"]
+    grid_label_size_input = workspace_components["grid_label_size_input"]
 
-    with gr.Group(visible=False) as viewer_group:
-        with gr.Row(equal_height=False):
-            with gr.Column(scale=7, min_width=760):
-                with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
-                    with gr.Tabs(selected="original", elem_classes=["cia-image-tabs"]) as image_tabs:
-                        with gr.Tab("Original", id="original"):
-                            original_preview = gr.Image(
-                                label="Current image",
-                                interactive=False,
-                                height=600,
-                            )
+    add_rectangle_button = workspace_components["add_rectangle_button"]
+    delete_rectangle_button = workspace_components["delete_rectangle_button"]
+    rectangle_selector = workspace_components["rectangle_selector"]
+    x_input = workspace_components["x_input"]
+    y_input = workspace_components["y_input"]
+    width_input = workspace_components["width_input"]
+    height_input = workspace_components["height_input"]
+    update_rectangle_button = workspace_components["update_rectangle_button"]
+    rectangles_json = workspace_components["rectangles_json"]
 
-                        with gr.Tab("Overlay", id="overlay"):
-                            overlay_preview = gr.Image(
-                                label="Rectangle overlay preview",
-                                interactive=False,
-                                height=600,
-                            )
-
-                        with gr.Tab("Anonymized", id="anonymized"):
-                            anonymized_preview = gr.Image(
-                                label="Anonymized preview",
-                                interactive=False,
-                                height=600,
-                            )
-
-                    with gr.Row(equal_height=True):
-                        first_button = gr.Button(value="First")
-                        previous_button = gr.Button(value="Previous")
-                        batch_position = gr.Markdown(value=batch_status(None, None))
-                        next_button = gr.Button(value="Next")
-                        last_button = gr.Button(value="Last")
-
-                    with gr.Group(elem_classes=["cia-tight-card"]):
-                        show_grid_checkbox = gr.Checkbox(
-                            label="Show pixel grid in Overlay",
-                            value=False,
-                        )
-
-                        with gr.Row(equal_height=True):
-                            grid_size_input = gr.Number(
-                                label="Grid square size in pixels",
-                                value=100,
-                                precision=0,
-                                scale=1,
-                            )
-                            grid_label_size_input = gr.Number(
-                                label="Grid number size",
-                                value=12,
-                                precision=0,
-                                scale=1,
-                            )
-
-            with gr.Column(scale=3, min_width=360, elem_classes=["cia-right-column"]):
-                with gr.Group(elem_classes=["cia-card", "cia-top-panel"]):
-                    with gr.Row(equal_height=True):
-                        gr.Markdown(
-                            "### Rectangles <span class='cia-muted'>(global for all images)</span>"
-                        )
-                        add_rectangle_button = gr.Button(
-                            value="Add rectangle",
-                            variant="secondary",
-                            scale=0,
-                            elem_classes=["cia-primary-action"],
-                        )
-
-                    rectangle_selector = gr.Dropdown(
-                        label="Selected rectangle",
-                        choices=[],
-                        value=None,
-                        interactive=True,
-                    )
-
-                    with gr.Row(equal_height=True):
-                        x_input = gr.Number(label="X", value=0, precision=0)
-                        y_input = gr.Number(label="Y", value=0, precision=0)
-
-                    with gr.Row(equal_height=True):
-                        width_input = gr.Number(
-                            label="W",
-                            value=DEFAULT_RECTANGLE_WIDTH,
-                            precision=0,
-                        )
-
-                        height_input = gr.Number(
-                            label="H",
-                            value=DEFAULT_RECTANGLE_HEIGHT,
-                            precision=0,
-                        )
-
-                    update_rectangle_button = gr.Button(
-                        value="Update selected rectangle",
-                        variant="secondary",
-                        elem_classes=["cia-primary-action"],
-                    )
-                    delete_rectangle_button = gr.Button(value="Delete selected rectangle")
-
-                    rectangles_json = gr.Code(
-                        label="Rectangle coordinates",
-                        language="json",
-                        interactive=False,
-                        value="[]",
-                        elem_classes=["cia-json-card"],
-                    )
-        with gr.Row(equal_height=False):
-            with gr.Column(scale=7, min_width=760):
-                current_metadata_html = gr.HTML(
-                    label="Current image metadata",
-                    visible=False,
-                    elem_classes=["cia-card", "cia-bottom-panel"],
-                )
-
-            with gr.Column(scale=3, min_width=360):
-                with gr.Group(elem_classes=["cia-card", "cia-upload-panel", "cia-bottom-panel"]):
-                    gr.Markdown("### Upload images")
-                    side_batch_files = gr.Files(
-                        label="Drag and drop images here or click to browse",
-                        file_types=["image"],
-                        elem_classes=["cia-upload-dropzone"],
-                    )
-                    gr.Markdown(
-                        "Supported formats: JPG, PNG, TIFF, DICOM",
-                        elem_classes=["cia-muted"],
-                    )
+    current_metadata_html = workspace_components["current_metadata_html"]
+    side_batch_files = workspace_components["side_batch_files"]
 
     initial_batch_files.change(
         fn=handle_workspace_upload,
