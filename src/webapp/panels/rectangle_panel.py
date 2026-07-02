@@ -80,8 +80,10 @@ def build_rectangle_panel() -> dict[str, Any]:
                 label="Rectangle coordinates",
                 language="json",
                 interactive=False,
-                value="[]",
-                lines=16,
+                value="{}",
+                lines=22,
+                max_lines=22,
+                wrap_lines=True,
                 elem_classes=["cia-json-card"],
             )
 

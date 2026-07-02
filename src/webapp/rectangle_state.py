@@ -159,5 +159,19 @@ def get_rectangle_values(
     )
 
 
+def _display_rectangle(rectangle: dict) -> dict:
+    return {
+        "filename": rectangle_filename(rectangle),
+        "x": int(rectangle["x"]),
+        "y": int(rectangle["y"]),
+        "width": int(rectangle["width"]),
+        "height": int(rectangle["height"]),
+    }
+
+
 def format_rectangles(rectangles: list[dict] | None) -> str:
-    return json.dumps(rectangles or [], indent=4)
+    display_rectangles = {
+        f"Rectangle {index + 1}": _display_rectangle(rectangle)
+        for index, rectangle in enumerate(rectangles or [])
+    }
+    return json.dumps(display_rectangles, indent=4)
