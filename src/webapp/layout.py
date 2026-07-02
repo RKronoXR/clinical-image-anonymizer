@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gradio as gr
 
+from src.webapp.event_registry import register_callbacks
 from src.webapp.layout_components import build_viewer_workspace
 from src.webapp.panels.export_panel import build_export_panel
 from src.webapp.panels.upload_panel import build_initial_upload_panel
@@ -289,10 +290,13 @@ def handle_grid_change(files, index, rectangles, show_grid, grid_size, grid_labe
     )
 
 
+
 def build_main_layout():
-    files_state = gr.State([])
-    rectangle_state = gr.State([])
-    batch_index_state = gr.State(0)
+    components = {
+        "files_state": gr.State([]),
+        "rectangle_state": gr.State([]),
+        "batch_index_state": gr.State(0),
+    }
 
     initial_upload_components = build_initial_upload_panel()
     export_components = build_export_panel()
@@ -300,338 +304,52 @@ def build_main_layout():
         initial_batch_status_html=batch_status(None, None),
     )
 
-    initial_upload_group = initial_upload_components["upload_group"]
-    initial_batch_files = initial_upload_components["batch_files"]
-
-    export_group = export_components["export_group"]
-    export_output_folder = export_components["export_output_folder"]
-    export_name_prefix = export_components["export_name_prefix"]
-    export_randomize_order = export_components["export_randomize_order"]
-    export_button = export_components["export_button"]
-
-    viewer_group = workspace_components["viewer_group"]
-    image_tabs = workspace_components["image_tabs"]
-    original_preview = workspace_components["original_preview"]
-    overlay_preview = workspace_components["overlay_preview"]
-    anonymized_preview = workspace_components["anonymized_preview"]
-
-    first_button = workspace_components["first_button"]
-    previous_button = workspace_components["previous_button"]
-    batch_position = workspace_components["batch_position"]
-    next_button = workspace_components["next_button"]
-    last_button = workspace_components["last_button"]
-
-    show_grid_checkbox = workspace_components["show_grid_checkbox"]
-    grid_size_input = workspace_components["grid_size_input"]
-    grid_label_size_input = workspace_components["grid_label_size_input"]
-
-    add_rectangle_button = workspace_components["add_rectangle_button"]
-    delete_rectangle_button = workspace_components["delete_rectangle_button"]
-    rectangle_selector = workspace_components["rectangle_selector"]
-    x_input = workspace_components["x_input"]
-    y_input = workspace_components["y_input"]
-    width_input = workspace_components["width_input"]
-    height_input = workspace_components["height_input"]
-    update_rectangle_button = workspace_components["update_rectangle_button"]
-    rectangles_json = workspace_components["rectangles_json"]
-
-    current_metadata_html = workspace_components["current_metadata_html"]
-    side_batch_files = workspace_components["side_batch_files"]
-
-    initial_batch_files.change(
-        fn=handle_workspace_upload,
-        inputs=[
-            initial_batch_files,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            files_state,
-            rectangle_state,
-            batch_index_state,
-            initial_upload_group,
-            export_group,
-            viewer_group,
-            current_metadata_html,
-            rectangle_selector,
-            x_input,
-            y_input,
-            width_input,
-            height_input,
-            rectangles_json,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            batch_position,
-            side_batch_files,
-        ],
+    components.update(
+        {
+            "initial_upload_group": initial_upload_components["upload_group"],
+            "initial_batch_files": initial_upload_components["batch_files"],
+            **export_components,
+            **workspace_components,
+        }
     )
 
-    side_batch_files.change(
-        fn=handle_workspace_upload,
-        inputs=[
-            side_batch_files,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            files_state,
-            rectangle_state,
-            batch_index_state,
-            initial_upload_group,
-            export_group,
-            viewer_group,
-            current_metadata_html,
-            rectangle_selector,
-            x_input,
-            y_input,
-            width_input,
-            height_input,
-            rectangles_json,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            batch_position,
-            side_batch_files,
-        ],
-    )
-
-    first_button.click(
-        fn=lambda files, index, rectangles, show_grid, grid_size, grid_label_size: navigate_batch(
-            files, index, "first", rectangles, show_grid, grid_size, grid_label_size
-        ),
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            batch_index_state,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            current_metadata_html,
-            batch_position,
-        ],
-    )
-
-    previous_button.click(
-        fn=lambda files, index, rectangles, show_grid, grid_size, grid_label_size: navigate_batch(
-            files, index, "previous", rectangles, show_grid, grid_size, grid_label_size
-        ),
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            batch_index_state,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            current_metadata_html,
-            batch_position,
-        ],
-    )
-
-    next_button.click(
-        fn=lambda files, index, rectangles, show_grid, grid_size, grid_label_size: navigate_batch(
-            files, index, "next", rectangles, show_grid, grid_size, grid_label_size
-        ),
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            batch_index_state,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            current_metadata_html,
-            batch_position,
-        ],
-    )
-
-    last_button.click(
-        fn=lambda files, index, rectangles, show_grid, grid_size, grid_label_size: navigate_batch(
-            files, index, "last", rectangles, show_grid, grid_size, grid_label_size
-        ),
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            batch_index_state,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            current_metadata_html,
-            batch_position,
-        ],
-    )
-
-    show_grid_checkbox.change(
-        fn=handle_grid_change,
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[original_preview, overlay_preview, anonymized_preview],
-    ).then(
-        fn=lambda: gr.update(selected="overlay"),
-        inputs=None,
-        outputs=image_tabs,
-    )
-
-    grid_size_input.change(
-        fn=handle_grid_change,
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[original_preview, overlay_preview, anonymized_preview],
-    )
-
-    grid_label_size_input.change(
-        fn=handle_grid_change,
-        inputs=[
-            files_state,
-            batch_index_state,
-            rectangle_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[original_preview, overlay_preview, anonymized_preview],
-    )
-
-    add_rectangle_button.click(
-        fn=handle_add_rectangle,
-        inputs=[
-            rectangle_state,
-            files_state,
-            batch_index_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            rectangle_state,
-            rectangle_selector,
-            rectangles_json,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-            image_tabs,
-        ],
-    )
-
-    rectangle_selector.change(
-        fn=get_rectangle_values,
-        inputs=[rectangle_state, rectangle_selector],
-        outputs=[x_input, y_input, width_input, height_input],
-    )
-
-    update_rectangle_button.click(
-        fn=handle_update_rectangle,
-        inputs=[
-            rectangle_state,
-            rectangle_selector,
-            x_input,
-            y_input,
-            width_input,
-            height_input,
-            files_state,
-            batch_index_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            rectangle_state,
-            rectangles_json,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-        ],
-    )
-
-    delete_rectangle_button.click(
-        fn=handle_delete_rectangle,
-        inputs=[
-            rectangle_state,
-            rectangle_selector,
-            files_state,
-            batch_index_state,
-            show_grid_checkbox,
-            grid_size_input,
-            grid_label_size_input,
-        ],
-        outputs=[
-            rectangle_state,
-            rectangle_selector,
-            x_input,
-            y_input,
-            width_input,
-            height_input,
-            rectangles_json,
-            original_preview,
-            overlay_preview,
-            anonymized_preview,
-        ],
+    register_callbacks(
+        components=components,
+        handle_workspace_upload=handle_workspace_upload,
+        navigate_batch=navigate_batch,
+        handle_grid_change=handle_grid_change,
+        handle_add_rectangle=handle_add_rectangle,
+        handle_update_rectangle=handle_update_rectangle,
+        handle_delete_rectangle=handle_delete_rectangle,
     )
 
     return {
-        "files_state": files_state,
-        "initial_batch_files": initial_batch_files,
-        "side_batch_files": side_batch_files,
-        "export_group": export_group,
-        "viewer_group": viewer_group,
-        "batch_index_state": batch_index_state,
-        "original_preview": original_preview,
-        "overlay_preview": overlay_preview,
-        "anonymized_preview": anonymized_preview,
-        "batch_position": batch_position,
-        "current_metadata_html": current_metadata_html,
-        "rectangle_state": rectangle_state,
-        "add_rectangle_button": add_rectangle_button,
-        "delete_rectangle_button": delete_rectangle_button,
-        "rectangle_selector": rectangle_selector,
-        "x_input": x_input,
-        "y_input": y_input,
-        "width_input": width_input,
-        "height_input": height_input,
-        "update_rectangle_button": update_rectangle_button,
-        "show_grid_checkbox": show_grid_checkbox,
-        "grid_size_input": grid_size_input,
-        "grid_label_size_input": grid_label_size_input,
-        "rectangles_json": rectangles_json,
-        "export_output_folder": export_output_folder,
-        "export_name_prefix": export_name_prefix,
-        "export_randomize_order": export_randomize_order,
-        "export_button": export_button,
+        "files_state": components["files_state"],
+        "initial_batch_files": components["initial_batch_files"],
+        "side_batch_files": components["side_batch_files"],
+        "export_group": components["export_group"],
+        "viewer_group": components["viewer_group"],
+        "batch_index_state": components["batch_index_state"],
+        "original_preview": components["original_preview"],
+        "overlay_preview": components["overlay_preview"],
+        "anonymized_preview": components["anonymized_preview"],
+        "batch_position": components["batch_position"],
+        "current_metadata_html": components["current_metadata_html"],
+        "rectangle_state": components["rectangle_state"],
+        "add_rectangle_button": components["add_rectangle_button"],
+        "delete_rectangle_button": components["delete_rectangle_button"],
+        "rectangle_selector": components["rectangle_selector"],
+        "x_input": components["x_input"],
+        "y_input": components["y_input"],
+        "width_input": components["width_input"],
+        "height_input": components["height_input"],
+        "update_rectangle_button": components["update_rectangle_button"],
+        "show_grid_checkbox": components["show_grid_checkbox"],
+        "grid_size_input": components["grid_size_input"],
+        "grid_label_size_input": components["grid_label_size_input"],
+        "rectangles_json": components["rectangles_json"],
+        "export_output_folder": components["export_output_folder"],
+        "export_name_prefix": components["export_name_prefix"],
+        "export_randomize_order": components["export_randomize_order"],
+        "export_button": components["export_button"],
     }
