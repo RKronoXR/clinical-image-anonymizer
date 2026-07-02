@@ -59,8 +59,10 @@ def test_export_creates_images_and_csv(tmp_path: Path) -> None:
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
+
     create_test_image(input_dir / "img1.png")
     create_test_image(input_dir / "img2.png")
+
     export_anonymized_images(
         image_paths=[input_dir / "img1.png", input_dir / "img2.png"],
         output_dir=output_dir,
@@ -68,13 +70,24 @@ def test_export_creates_images_and_csv(tmp_path: Path) -> None:
         prefix="Anon_",
         randomize=False,
     )
+
     assert (output_dir / "Anon_0001.png").exists()
     assert (output_dir / "Anon_0002.png").exists()
+
     with (output_dir / "mapping.csv").open(newline="", encoding="utf-8") as file:
-        rows = list(csv.reader(file))
-    assert rows[0] == ["original_name", "new_name"]
-    assert rows[1] == ["img1.png", "Anon_0001.png"]
-    assert rows[2] == ["img2.png", "Anon_0002.png"]
+        rows = list(csv.DictReader(file))
+
+    assert rows[0]["output_index"] == "1"
+    assert rows[0]["original_name"] == "img1.png"
+    assert rows[0]["new_name"] == "Anon_0001.png"
+    assert rows[0]["status"] == "success"
+    assert rows[0]["error"] == ""
+
+    assert rows[1]["output_index"] == "2"
+    assert rows[1]["original_name"] == "img2.png"
+    assert rows[1]["new_name"] == "Anon_0002.png"
+    assert rows[1]["status"] == "success"
+    assert rows[1]["error"] == ""
 
 
 def test_export_does_not_overwrite(tmp_path: Path) -> None:
