@@ -39,6 +39,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=True,
+    icon="assets/icons/clinical_image_anonymizer.ico",
     version="version_info.txt",
 )
 
