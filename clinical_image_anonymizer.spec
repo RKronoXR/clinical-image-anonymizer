@@ -39,6 +39,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=True,
+    version="version_info.txt",
 )
 
 coll = COLLECT(
