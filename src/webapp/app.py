@@ -9,6 +9,8 @@ from src.webapp.layout import build_main_layout
 
 
 APP_TITLE = "Clinical Image Anonymizer"
+APP_SUBTITLE = "Local-first research prototype for clinical image anonymization."
+APP_AUTHOR = "Author: Ricardo Eugenio Gonzalez Valenzuela · ACTA AI Lab"
 
 
 def resource_path(relative_path: str) -> Path:
@@ -25,10 +27,8 @@ def build_app() -> gr.Blocks:
     """Build the local Gradio interface."""
     with gr.Blocks(title=APP_TITLE, css=_load_app_css()) as demo:
         gr.Markdown(f"# {APP_TITLE}", elem_classes=["cia-title"])
-        gr.Markdown(
-            "Local-first research prototype for clinical image anonymization.",
-            elem_classes=["cia-subtitle"],
-        )
+        gr.Markdown(APP_SUBTITLE, elem_classes=["cia-subtitle"])
+        gr.Markdown(APP_AUTHOR, elem_classes=["cia-subtitle"])
 
         build_main_layout()
 
@@ -38,9 +38,10 @@ def build_app() -> gr.Blocks:
 def main() -> None:
     app = build_app()
     app.launch(
-        server_name="0.0.0.0",
+        server_name="127.0.0.1",
         server_port=7860,
         favicon_path=str(resource_path("assets/icons/clinical_image_anonymizer.ico")),
+        inbrowser=True,
     )
 
 
