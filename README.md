@@ -56,3 +56,13 @@ http://127.0.0.1:8000/docs
 ```
 
 See [`docs/rest_api.md`](docs/rest_api.md) for endpoint details, examples, localhost/LAN usage, and privacy guidance.
+
+## Usage and development documentation
+
+Main documentation pages:
+
+- [`docs/getting_started.md`](docs/getting_started.md): quick start for users, CLI, API, and developers.
+- [`docs/installer_and_executables.md`](docs/installer_and_executables.md): Windows installer, GUI, and CLI usage.
+- [`docs/build_installer.md`](docs/build_installer.md): building the PyInstaller executables and Inno Setup installer.
+- [`docs/rest_api.md`](docs/rest_api.md): REST API usage, LAN notes, and safety guidance.
+- [`docs/developer_guide.md`](docs/developer_guide.md): clone, environment setup, testing, and source-code development.
