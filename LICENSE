@@ -1,0 +1,67 @@
+ACTA AI Lab Attribution License v1.0
+
+Copyright (c) 2026 Ricardo Eugenio Gonzalez Valenzuela
+
+Project: Clinical Image Anonymizer
+Organization: ACTA AI Lab
+Repository: https://github.com/RKronoXR/clinical-image-anonymizer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files, to copy, use, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the software,
+subject to the following conditions:
+
+1. Attribution
+
+Any copy, redistribution, modified version, derivative work, publication,
+software release, documentation, or public demonstration based on this software
+must give appropriate credit to the original project.
+
+The attribution must include:
+
+- Project name: Clinical Image Anonymizer
+- Author: Ricardo Eugenio Gonzalez Valenzuela
+- Organization: ACTA AI Lab
+- Repository: https://github.com/RKronoXR/clinical-image-anonymizer
+
+2. Research Acknowledgement
+
+If this software is used to anonymize images for research, education,
+publication, thesis work, preprints, datasets, reports, presentations, or any
+scientific output, the user must acknowledge and cite the original project.
+
+Recommended acknowledgement:
+
+"This work used Clinical Image Anonymizer v1.0.0, developed by Ricardo Eugenio
+Gonzalez Valenzuela at ACTA AI Lab, for local-first clinical image
+anonymization."
+
+3. Preservation of Notices
+
+This license notice and attribution requirement must be included in all copies
+or substantial portions of the software.
+
+4. Modified Versions
+
+Modified versions must clearly indicate that changes were made. Modified
+versions must not imply endorsement by the original author, ACTA AI Lab, ACTA,
+Vrije Universiteit Amsterdam, or any affiliated institution unless explicit
+written permission has been granted.
+
+5. No Clinical Claim
+
+This software is a research prototype. It is not a medical device, not a
+clinical tool, not for diagnosis, and not for clinical decision-making.
+
+6. No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, PRIVACY PROTECTION,
+REGULATORY COMPLIANCE, OR COMPLETE ANONYMIZATION.
+
+IN NO EVENT SHALL THE AUTHORS, COPYRIGHT HOLDERS, CONTRIBUTORS, ACTA AI LAB,
+ACTA, VRIJE UNIVERSITEIT AMSTERDAM, OR AFFILIATED INSTITUTIONS BE LIABLE FOR
+ANY CLAIM, DAMAGES, PRIVACY BREACH, DATA LOSS, CLINICAL USE, REGULATORY ISSUE,
+OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
