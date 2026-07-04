@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import socket
 import sys
+import urllib.request
 import webbrowser
 from pathlib import Path
 
@@ -44,6 +45,15 @@ def is_port_in_use(host: str, port: int) -> bool:
         return probe.connect_ex((host, port)) == 0
 
 
+def is_local_app_available() -> bool:
+    """Return True when a local web app responds at the configured URL."""
+    try:
+        with urllib.request.urlopen(LOCAL_URL, timeout=0.8) as response:
+            return 200 <= response.status < 500
+    except Exception:
+        return False
+
+
 def _load_app_css() -> str:
     return resource_path("src/webapp/styles.css").read_text(encoding="utf-8")
 
@@ -71,8 +81,11 @@ def build_app() -> gr.Blocks:
 
     with gr.Blocks(title=APP_TITLE, css=_load_app_css()) as demo:
         gr.Markdown(f"# {APP_TITLE}", elem_classes=["cia-title"])
-        gr.HTML(build_about_html())
-        build_main_layout()
+
+        with gr.Group(visible=True) as about_group:
+            gr.HTML(build_about_html())
+
+        build_main_layout(about_group=about_group)
 
     return demo
 
@@ -80,7 +93,7 @@ def build_app() -> gr.Blocks:
 def main() -> None:
     ensure_standard_streams()
 
-    if is_port_in_use(SERVER_HOST, SERVER_PORT):
+    if is_local_app_available() or is_port_in_use(SERVER_HOST, SERVER_PORT):
         webbrowser.open(LOCAL_URL)
         return
 
