@@ -38,7 +38,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     icon="assets/icons/clinical_image_anonymizer.ico",
     version="version_info.txt",
 )

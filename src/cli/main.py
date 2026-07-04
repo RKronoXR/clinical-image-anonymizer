@@ -12,6 +12,26 @@ from src.cli.file_discovery import discover_input_images
 
 Rect: TypeAlias = tuple[int, int, int, int]
 
+APP_NAME = "Clinical Image Anonymizer"
+APP_VERSION = "1.0.0"
+APP_AUTHOR = "Ricardo Eugenio Gonzalez Valenzuela"
+APP_ORGANIZATION = "ACTA AI Lab"
+APP_REPOSITORY = "https://github.com/RKronoXR/clinical-image-anonymizer"
+APP_DESCRIPTION = (
+    "Local-first clinical image anonymization research prototype. "
+    "Original images are preserved; anonymized copies are written to the output folder."
+)
+
+
+def version_text() -> str:
+    return (
+        f"{APP_NAME} {APP_VERSION}\n"
+        f"Author: {APP_AUTHOR}\n"
+        f"Organization: {APP_ORGANIZATION}\n"
+        f"Repository: {APP_REPOSITORY}\n"
+        "Disclaimer: research prototype; not a medical device; not for diagnosis or clinical decision-making."
+    )
+
 
 def parse_rects(raw_rects: str | None) -> list[Rect]:
     if raw_rects is None or raw_rects.strip() == "":
@@ -55,13 +75,25 @@ def rects_to_export_dicts(rects: list[Rect]) -> list[dict]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="anonymize.py",
-        description="Anonymize clinical images locally.",
+        prog="clinical-image-anonymizer",
+        description=APP_DESCRIPTION,
+        epilog=(
+            f"Author: {APP_AUTHOR} | Organization: {APP_ORGANIZATION} | "
+            f"Repository: {APP_REPOSITORY}\n"
+            "Safety: original images are not modified. The user remains responsible for verifying anonymization.\n"
+            "Large batches: prefer the CLI with --workers for many images."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
+    parser.add_argument("--version", action="version", version=version_text())
     parser.add_argument("--input", required=True, help="Input image file or folder.")
-    parser.add_argument("--output", required=True, help="Output folder.")
-    parser.add_argument("--rects", default=None, help='Example: "10,20,200,80" or "[[10,20,200,80],[30,40,100,120]]".')
+    parser.add_argument("--output", required=True, help="Output folder for anonymized copies.")
+    parser.add_argument(
+        "--rects",
+        default=None,
+        help='Example: "10,20,200,80" or "[[10,20,200,80],[30,40,100,120]]".',
+    )
     parser.add_argument("--prefix", default="", help="Optional output filename prefix.")
     parser.add_argument("--workers", type=int, default=1, help="Number of workers. Must be positive.")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing output files.")
@@ -96,7 +128,12 @@ def main() -> int:
     except (FileNotFoundError, ValueError) as exc:
         parser.error(str(exc))
 
-    print("Clinical Image Anonymizer CLI")
+    print(f"{APP_NAME} CLI")
+    print(f"Version    : {APP_VERSION}")
+    print(f"Author     : {APP_AUTHOR}")
+    print(f"Organization: {APP_ORGANIZATION}")
+    print(f"Repository : {APP_REPOSITORY}")
+    print("Safety     : Original images are preserved; anonymized copies are written to output.")
     print(f"Input      : {args.input}")
     print(f"Output     : {args.output}")
     print(f"Images     : {len(image_paths)}")

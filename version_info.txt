@@ -15,12 +15,14 @@ VSVersionInfo(
         "040904B0",
         [
           StringStruct("CompanyName", "ACTA AI Lab"),
-          StringStruct("FileDescription", "Clinical Image Anonymizer"),
+          StringStruct("FileDescription", "Local-first clinical image anonymization research prototype"),
           StringStruct("FileVersion", "1.0.0"),
           StringStruct("InternalName", "Clinical Image Anonymizer"),
           StringStruct("OriginalFilename", "Clinical Image Anonymizer.exe"),
           StringStruct("ProductName", "Clinical Image Anonymizer"),
-          StringStruct("ProductVersion", "1.0.0")
+          StringStruct("ProductVersion", "1.0.0"),
+          StringStruct("LegalCopyright", "Copyright (c) 2026 Ricardo Eugenio Gonzalez Valenzuela"),
+          StringStruct("Comments", "Research prototype. Not a medical device. Not for diagnosis or clinical decision-making.")
         ]
       )
     ]),

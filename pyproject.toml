@@ -1,9 +1,13 @@
 [project]
 name = "clinical-image-anonymizer"
-version = "0.1.0"
+version = "1.0.0"
 description = "Local-first clinical image anonymization tool."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
+
+authors = [
+    { name = "Ricardo Eugenio Gonzalez Valenzuela" }
+]
 
 dependencies = [
     "gradio>=5.0,<6.0",
@@ -14,6 +18,13 @@ dependencies = [
     "piexif>=1.1,<2.0",
     "pydantic>=2.0,<3.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/RKronoXR/clinical-image-anonymizer"
+Organization = "https://github.com/RKronoXR"
+
+[project.scripts]
+clinical-image-anonymizer = "src.cli.main:main"
 
 [build-system]
 requires = ["setuptools>=61"]
