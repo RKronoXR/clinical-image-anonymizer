@@ -118,6 +118,7 @@ class UIComponents:
     viewer: ViewerComponents
     rectangle: RectangleComponents
     metadata: MetadataComponents
+    about_group: Any | None = None
 
     @classmethod
     def from_component_maps(
@@ -127,6 +128,7 @@ class UIComponents:
         initial_upload_components: dict[str, Any],
         export_components: dict[str, Any],
         workspace_components: dict[str, Any],
+        about_group: Any | None = None,
     ) -> "UIComponents":
         """Create typed component groups from panel-builder dictionaries."""
         return cls(
@@ -174,6 +176,7 @@ class UIComponents:
             metadata=MetadataComponents(
                 current_metadata_html=workspace_components["current_metadata_html"],
             ),
+            about_group=about_group,
         )
 
     def public_component_map(self) -> dict[str, Any]:

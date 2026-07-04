@@ -271,3 +271,34 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 0 !important;
     line-height: 1 !important;
 }
+
+/* About card: same visual width as the initial upload card. */
+.cia-about-card {
+    width: var(--cia-initial-upload-width) !important;
+    max-width: var(--cia-initial-upload-width) !important;
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+    padding: 14px !important;
+    border: 1px solid var(--cia-card-border) !important;
+    border-radius: 12px !important;
+    background: var(--cia-card-bg) !important;
+    box-sizing: border-box !important;
+}
+
+.cia-about-card p {
+    margin-top: 0.35rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+
+.cia-top-action-row {
+    width: var(--cia-initial-upload-width) !important;
+    max-width: var(--cia-initial-upload-width) !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+}
+
+.cia-exit-status {
+    color: var(--cia-muted) !important;
+    font-size: 0.9rem !important;
+}

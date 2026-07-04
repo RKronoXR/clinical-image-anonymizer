@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use Clinical Image Anonymizer for research, teaching, datasets, reports, presentations, or publications, please cite it using this metadata."
+title: "Clinical Image Anonymizer"
+version: "1.0.0"
+date-released: "2026-07-04"
+type: software
+abstract: "A local-first research prototype for anonymizing 2D clinical images by inspecting metadata, removing supported metadata, applying manual rectangular pixel censoring, and exporting anonymized copies while preserving original input images."
+authors:
+  - family-names: "Gonzalez Valenzuela"
+    given-names: "Ricardo Eugenio"
+repository-code: "https://github.com/RKronoXR/clinical-image-anonymizer"
+url: "https://github.com/RKronoXR/clinical-image-anonymizer"
+license: "ACTA-AI-Lab-Attribution-1.0"
+keywords:
+  - clinical image anonymization
+  - medical imaging
+  - dental radiographs
+  - metadata anonymization
+  - local-first software
+  - research prototype
+  - ACTA AI Lab
