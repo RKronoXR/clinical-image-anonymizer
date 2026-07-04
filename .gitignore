@@ -1,17 +1,121 @@
+from pathlib import Path
+
+gitignore = r'''# ACTA AI Lab - Clinical Image Anonymizer
+# Git ignore rules for local, private, sensitive, generated, and large files.
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local medical, private, and sensitive data
 data/
+datasets/
+annotations/
+processed_data/
+
+# Generated outputs and experiment artifacts
 outputs/
 runs/
-.venv/
-__pycache__/
-*.pyc
-.env
+logs/
+checkpoints/
+weights/
+models/
 *.log
+
+# Model and large binary artifacts
 *.pt
 *.pth
 *.onnx
+*.engine
 *.ckpt
-.DS_Store
-Thumbs.db
+*.safetensors
+
+# Temporary files
+.cache/
+.tmp/
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
 
 # Python packaging artifacts
 *.egg-info/
+dist/
+build/
+*.whl
+
+# PyInstaller generated artifacts
+*.manifest
+*.toc
+*.pkg
+*.pyz
+*.pyz_extracted/
+"Clinical Image Anonymizer.spec"
+
+# Keep the maintained PyInstaller spec file tracked
+!clinical_image_anonymizer.spec
+
+# Installer build output
+installer/dist/
+installer/build/
+installer/output/
+
+# Inno Setup generated artifacts
+*.exe
+*.msi
+
+# Keep source installer scripts and metadata trackable
+!installer/*.iss
+!version_info.txt
+
+# Local test and demo artifacts
+test_outputs/
+demo_outputs/
+sample_outputs/
+
+# Safety note:
+# Do not commit datasets, private clinical images, processed medical data,
+# generated anonymized outputs, trained models, checkpoints, logs with private
+# paths, credentials, or secrets unless explicitly approved.
+'''
+
+path = Path("/mnt/data/.gitignore")
+path.write_text(gitignore, encoding="utf-8")
+path
