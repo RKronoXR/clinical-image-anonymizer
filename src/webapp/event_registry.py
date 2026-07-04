@@ -27,8 +27,12 @@ def _workspace_upload_inputs(components: UIComponents, file_component: Any) -> l
     ]
 
 
-def _workspace_upload_outputs(components: UIComponents) -> list[Any]:
-    return [
+def _workspace_upload_outputs(
+    components: UIComponents,
+    *,
+    include_side_upload: bool,
+) -> list[Any]:
+    outputs = [
         components.state.files_state,
         components.state.rectangle_state,
         components.state.batch_index_state,
@@ -46,13 +50,21 @@ def _workspace_upload_outputs(components: UIComponents) -> list[Any]:
         *components.viewer.preview_outputs,
         components.viewer.batch_position,
         *components.viewer.navigation_buttons,
-        components.upload.side_batch_files,
-        *components.rectangle.selection_buttons,
     ]
 
+    if include_side_upload:
+        outputs.append(components.upload.side_batch_files)
 
-def _clear_upload_outputs(components: UIComponents) -> list[Any]:
-    return [
+    outputs.extend(components.rectangle.selection_buttons)
+    return outputs
+
+
+def _clear_upload_outputs(
+    components: UIComponents,
+    *,
+    include_side_upload: bool,
+) -> list[Any]:
+    outputs = [
         components.state.files_state,
         components.state.rectangle_state,
         components.state.batch_index_state,
@@ -71,9 +83,23 @@ def _clear_upload_outputs(components: UIComponents) -> list[Any]:
         components.viewer.batch_position,
         *components.viewer.navigation_buttons,
         components.upload.initial_batch_files,
-        components.upload.side_batch_files,
-        *components.rectangle.selection_buttons,
     ]
+
+    if include_side_upload:
+        outputs.append(components.upload.side_batch_files)
+
+    outputs.extend(components.rectangle.selection_buttons)
+    return outputs
+
+
+def _drop_side_upload_from_workspace_result(result: Any) -> tuple[Any, ...]:
+    values = tuple(result)
+    return values[:-3] + values[-2:]
+
+
+def _drop_side_upload_from_clear_result(result: Any) -> tuple[Any, ...]:
+    values = tuple(result)
+    return values[:-3] + values[-2:]
 
 
 def _shared_preview_inputs(components: UIComponents) -> list[Any]:
@@ -182,21 +208,30 @@ def register_callbacks(
     handle_delete_rectangle: Callable[..., Any],
     handle_clear_upload: Callable[..., Any],
 ) -> None:
-    """Wire Gradio UI events without owning callback implementation logic."""
-    for file_component in (
-        components.upload.initial_batch_files,
-        components.upload.side_batch_files,
-    ):
-        file_component.change(
-            fn=handle_workspace_upload,
-            inputs=_workspace_upload_inputs(components, file_component),
-            outputs=_workspace_upload_outputs(components),
-        )
-        file_component.clear(
-            fn=handle_clear_upload,
-            inputs=None,
-            outputs=_clear_upload_outputs(components),
-        )
+    """Wire Gradio UI events without self-triggering file-list updates."""
+    components.upload.initial_batch_files.change(
+        fn=handle_workspace_upload,
+        inputs=_workspace_upload_inputs(components, components.upload.initial_batch_files),
+        outputs=_workspace_upload_outputs(components, include_side_upload=True),
+    )
+    components.upload.initial_batch_files.clear(
+        fn=handle_clear_upload,
+        inputs=None,
+        outputs=_clear_upload_outputs(components, include_side_upload=True),
+    )
+
+    components.upload.side_batch_files.change(
+        fn=lambda *args: _drop_side_upload_from_workspace_result(
+            handle_workspace_upload(*args)
+        ),
+        inputs=_workspace_upload_inputs(components, components.upload.side_batch_files),
+        outputs=_workspace_upload_outputs(components, include_side_upload=False),
+    )
+    components.upload.side_batch_files.clear(
+        fn=lambda: _drop_side_upload_from_clear_result(handle_clear_upload()),
+        inputs=None,
+        outputs=_clear_upload_outputs(components, include_side_upload=False),
+    )
 
     for button_key, direction in NAVIGATION_DIRECTIONS.items():
         _navigation_button(components, button_key).click(
