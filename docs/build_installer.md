@@ -1,167 +1,211 @@
-# Build Installer
+# Build the Windows Installer
 
-This document explains how to build the Windows executable and installer for Clinical Image Anonymizer.
+This document explains how to build the Windows GUI executable, CLI executable, and installer.
 
-## Requirements
+---
 
-Install development dependencies from the project root:
+## Prerequisites
 
-```powershell
-pip install -r requirements-dev.txt
+Install:
+
+- Python 3.12
+- Project dependencies
+- PyInstaller
+- Inno Setup 6
+
+Recommended Inno Setup locations:
+
+```text
+C:\Program Files (x86)\Inno Setup 6\ISCC.exe
+C:\Program Files\Inno Setup 6\ISCC.exe
 ```
 
-The Windows installer requires Inno Setup.
+---
+
+## Start from a clean repository state
+
+From the project root:
+
+```powershell
+cd C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer
+
+git status
+```
+
+Expected:
+
+```text
+nothing to commit, working tree clean
+```
+
+Run tests:
+
+```powershell
+python -m pytest
+```
+
+---
+
+## Remove previous build artifacts
+
+```powershell
+Remove-Item build, dist -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+---
 
 ## Build the GUI executable
 
-From the project root:
-
 ```powershell
-Remove-Item build, dist -Recurse -Force -ErrorAction SilentlyContinue
 pyinstaller --noconfirm clinical_image_anonymizer.spec
 ```
 
-The GUI executable is created at:
+Expected GUI output:
 
 ```text
-dist/Clinical Image Anonymizer/Clinical Image Anonymizer.exe
+dist\Clinical Image Anonymizer\Clinical Image Anonymizer.exe
+dist\Clinical Image Anonymizer\_internal\
 ```
 
-The GUI executable is built without a visible console window.
+This is a PyInstaller `onedir` build. The `_internal` folder is required.
 
-## Build the CLI executable
-
-From the project root:
-
-```powershell
-pyinstaller --noconfirm clinical_image_anonymizer_cli.spec
-```
-
-The CLI executable is created at:
-
-```text
-dist/clinical-image-anonymizer.exe
-```
-
-The CLI executable supports:
-
-```powershell
-.\dist\clinical-image-anonymizer.exe --help
-.\dist\clinical-image-anonymizer.exe --version
-```
-
-## Build both executables
-
-From the project root:
-
-```powershell
-Remove-Item build, dist -Recurse -Force -ErrorAction SilentlyContinue
-pyinstaller --noconfirm clinical_image_anonymizer.spec
-pyinstaller --noconfirm clinical_image_anonymizer_cli.spec
-```
-
-## Gradio packaging note
-
-Gradio 5 reads some of its own Python files as text at runtime.
-
-For that reason, the GUI PyInstaller spec must include:
-
-```python
-collect_data_files("gradio", include_py_files=True)
-```
-
-Without this, the executable may fail with missing files such as:
-
-```text
-gradio/blocks_events.py
-```
-
-## Test the GUI executable
-
-Run:
+Test GUI:
 
 ```powershell
 .\dist\"Clinical Image Anonymizer"\"Clinical Image Anonymizer.exe"
 ```
 
-Expected behavior:
+---
 
-- no console window remains visible;
-- the browser opens automatically;
-- the favicon uses the dental icon;
-- closing the app process stops the local server;
-- closing only the browser tab may leave the local server running.
+## Build the CLI executable
 
-## Test the CLI executable before installer build
+```powershell
+pyinstaller --noconfirm clinical_image_anonymizer_cli.spec
+```
 
-Run:
+Expected CLI output:
+
+```text
+dist\clinical-image-anonymizer.exe
+```
+
+Test CLI:
 
 ```powershell
 .\dist\clinical-image-anonymizer.exe --version
 .\dist\clinical-image-anonymizer.exe --help
 ```
 
-Expected behavior:
+---
 
-- `--version` shows version 1.0.0;
-- `--version` shows the author and ACTA AI Lab;
-- `--help` shows input, output, rectangles, workers, recursive mode, randomize mode, and dry run options;
-- the help text states that original images are not modified.
+## Build the installer with Inno Setup
 
-## Build the Windows installer
+Use one of these commands depending on where Inno Setup is installed:
 
-Open Inno Setup and compile:
-
-```text
-installer/clinical_image_anonymizer.iss
+```powershell
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\installer\clinical_image_anonymizer.iss
 ```
 
-The installer is created at:
+or:
 
-```text
-dist/installer/ClinicalImageAnonymizerSetup_v1.0.0.exe
+```powershell
+& "C:\Program Files\Inno Setup 6\ISCC.exe" .\installer\clinical_image_anonymizer.iss
 ```
 
-## Installer behavior
+Expected installer output:
 
-The installer installs:
+```text
+dist\installer\ClinicalImageAnonymizerSetup_v1.0.0.exe
+```
+
+---
+
+## What the installer includes
+
+The installer includes:
+
+- GUI executable:
 
 ```text
 Clinical Image Anonymizer.exe
+```
+
+- CLI executable:
+
+```text
 clinical-image-anonymizer.exe
 ```
 
-The installer can optionally add the installation folder to the user PATH.
+- PyInstaller internal dependencies:
 
-After installation, a new PowerShell window should support:
+```text
+_internal\
+```
+
+- Start Menu shortcut.
+- Optional Desktop shortcut.
+- Optional user PATH entry for CLI use.
+
+---
+
+## Test the installed application
+
+After installing:
+
+### GUI
+
+Open from Start Menu:
+
+```text
+Clinical Image Anonymizer
+```
+
+or:
+
+```powershell
+& "C:\Program Files\Clinical Image Anonymizer\Clinical Image Anonymizer.exe"
+```
+
+### CLI
+
+Open a new PowerShell terminal:
 
 ```powershell
 clinical-image-anonymizer --version
 clinical-image-anonymizer --help
 ```
 
-If the command is not recognized immediately, close PowerShell and open a new PowerShell window.
-
-## Recommended use for large batches
-
-For many images, prefer the CLI:
+If PATH was not enabled:
 
 ```powershell
-clinical-image-anonymizer --input "C:\path\to\images" --output "C:\path\to\output" --workers 4 --recursive
+& "C:\Program Files\Clinical Image Anonymizer\clinical-image-anonymizer.exe" --version
 ```
 
-The CLI is better for large batches because it supports path-based batch processing and worker configuration without loading all images into the GUI preview workflow.
+---
 
-## Final smoke test checklist
+## Installer verification checklist
 
-After installing from the generated installer, verify:
+Before release, verify:
 
-- desktop shortcut opens the GUI;
-- browser opens automatically;
-- favicon displays the dental icon;
-- GUI About section shows version, author, organization, and repository;
-- CLI works from PowerShell using `clinical-image-anonymizer --help`;
-- CLI works from a folder outside the repository;
-- exported outputs are new copies;
-- original images remain unchanged;
-- automated tests pass from the repository.
+- GUI opens from installed shortcut.
+- CLI works from a new terminal when PATH option is enabled.
+- CLI works from direct installed path.
+- GUI can upload images.
+- GUI can add rectangles.
+- GUI can export anonymized images.
+- CLI can export a test batch.
+- `mapping.csv` is created.
+- The installer uninstalls cleanly.
+- No datasets, outputs, private data, or generated build artifacts are committed to Git.
+
+---
+
+## Notes on one-file executables
+
+The current recommended build is:
+
+```text
+PyInstaller onedir + Inno Setup installer
+```
+
+A PyInstaller `onefile` portable executable is possible, but it can start more slowly because Windows must extract bundled files at runtime. For v1.0.0, the installer is the recommended distribution format.
