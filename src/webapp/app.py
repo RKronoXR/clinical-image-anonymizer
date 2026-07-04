@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -20,6 +21,16 @@ def resource_path(relative_path: str) -> Path:
     """Return resource path for local Python and PyInstaller builds."""
     base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
     return base_path / relative_path
+
+
+def ensure_standard_streams() -> None:
+    """Prevent uvicorn logging failure when PyInstaller runs without a console."""
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+    if sys.stdin is None:
+        sys.stdin = open(os.devnull, "r", encoding="utf-8")
 
 
 def _load_app_css() -> str:
@@ -45,6 +56,8 @@ def build_about_html() -> str:
 
 def build_app() -> gr.Blocks:
     """Build the local Gradio interface."""
+    ensure_standard_streams()
+
     with gr.Blocks(title=APP_TITLE, css=_load_app_css()) as demo:
         gr.Markdown(f"# {APP_TITLE}", elem_classes=["cia-title"])
         gr.Markdown(f"Version {APP_VERSION}", elem_classes=["cia-subtitle"])
@@ -62,6 +75,8 @@ def build_app() -> gr.Blocks:
 
 
 def main() -> None:
+    ensure_standard_streams()
+
     app = build_app()
     app.launch(
         server_name="127.0.0.1",
