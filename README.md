@@ -38,3 +38,21 @@ It is not a medical device, not a clinical tool, not for diagnosis, and not for 
 Users remain responsible for verifying that every exported image is sufficiently anonymized before sharing, publishing, uploading, or using it in research.
 
 See [`DISCLAIMER.md`](../DISCLAIMER.md) for the full disclaimer.
+
+## REST API
+
+The project includes a local-first FastAPI REST API.
+
+Start locally:
+
+```powershell
+python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+See [`docs/rest_api.md`](docs/rest_api.md) for endpoint details, examples, localhost/LAN usage, and privacy guidance.
