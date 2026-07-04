@@ -19,6 +19,8 @@ NAVIGATION_DIRECTIONS = {
 def _workspace_upload_inputs(components: UIComponents, file_component: Any) -> list[Any]:
     return [
         file_component,
+        components.state.rectangle_state,
+        components.state.batch_index_state,
         components.viewer.show_grid_checkbox,
         components.viewer.grid_size_input,
         components.viewer.grid_label_size_input,
@@ -45,6 +47,7 @@ def _workspace_upload_outputs(components: UIComponents) -> list[Any]:
         components.viewer.batch_position,
         *components.viewer.navigation_buttons,
         components.upload.side_batch_files,
+        *components.rectangle.selection_buttons,
     ]
 
 

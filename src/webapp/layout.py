@@ -108,6 +108,24 @@ def navigation_button_updates(files, index: int | float | None):
     )
 
 
+def filter_rectangles_for_files(
+    rectangles: list[dict] | None,
+    file_paths: list[str],
+) -> list[dict]:
+    """Keep global rectangles and rectangles that still belong to loaded files."""
+    loaded_filenames = {Path(path).name for path in file_paths}
+    kept: list[dict] = []
+
+    for rectangle in rectangles or []:
+        filename = rectangle.get("filename") or rectangle.get("image_path") or ""
+        filename = Path(str(filename)).name if filename else ""
+
+        if filename == ALL_IMAGES_FILENAME or filename in loaded_filenames:
+            kept.append(rectangle)
+
+    return kept
+
+
 def preview_current_batch_image(
     files,
     index,
@@ -138,43 +156,58 @@ def preview_current_batch_image(
     )
 
 
-def handle_workspace_upload(files, show_grid, grid_size, grid_label_size):
+def handle_workspace_upload(
+    files,
+    rectangles,
+    current_index,
+    show_grid,
+    grid_size,
+    grid_label_size,
+):
     file_paths = get_uploaded_file_paths(files)
-    rectangles: list[dict] = []
-    index = 0
+    updated_rectangles = filter_rectangles_for_files(rectangles, file_paths)
+
+    has_files = len(file_paths) > 0
+    index = 0 if not has_files else max(0, min(int(current_index or 0), len(file_paths) - 1))
+
     original, anonymized = preview_current_batch_image(
         file_paths,
         index,
-        rectangles,
+        updated_rectangles,
         show_grid,
         grid_size,
         grid_label_size,
     )
 
-    has_files = len(file_paths) > 0
     metadata_html = inspect_current_uploaded_image_html(file_paths, index)
     nav_updates = navigation_button_updates(file_paths, index)
+    choices = rectangle_choices(updated_rectangles)
+    selected = choices[-1] if choices else None
+    x, y, width, height = get_rectangle_values(updated_rectangles, selected)
+    has_selection = selected is not None
 
     return (
         file_paths,
-        rectangles,
+        updated_rectangles,
         index,
         gr.update(visible=not has_files),
         gr.update(visible=has_files),
         gr.update(visible=has_files),
         gr.update(visible=has_files, value=metadata_html),
-        gr.update(choices=[], value=None),
+        gr.update(choices=choices, value=selected),
         gr.update(value=True),
-        0,
-        0,
-        DEFAULT_RECTANGLE_WIDTH,
-        DEFAULT_RECTANGLE_HEIGHT,
-        format_rectangles([]),
+        x,
+        y,
+        width,
+        height,
+        format_rectangles(updated_rectangles),
         original,
         anonymized,
         batch_status(file_paths, index),
         *nav_updates,
         gr.update(value=file_paths),
+        gr.update(interactive=has_selection),
+        gr.update(interactive=has_selection),
     )
 
 

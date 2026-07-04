@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import os
+import socket
 import sys
+import webbrowser
 from pathlib import Path
 
 import gradio as gr
@@ -11,10 +13,12 @@ from src.webapp.layout import build_main_layout
 
 APP_TITLE = "Clinical Image Anonymizer"
 APP_VERSION = "1.0.0"
-APP_SUBTITLE = "Local-first research prototype for clinical image anonymization."
 APP_AUTHOR = "Ricardo Eugenio Gonzalez Valenzuela"
 APP_ORGANIZATION = "ACTA AI Lab"
 APP_REPOSITORY = "https://github.com/RKronoXR/clinical-image-anonymizer"
+SERVER_HOST = "127.0.0.1"
+SERVER_PORT = 7860
+LOCAL_URL = f"http://{SERVER_HOST}:{SERVER_PORT}"
 
 
 def resource_path(relative_path: str) -> Path:
@@ -33,6 +37,13 @@ def ensure_standard_streams() -> None:
         sys.stdin = open(os.devnull, "r", encoding="utf-8")
 
 
+def is_port_in_use(host: str, port: int) -> bool:
+    """Return True when the local Gradio port is already in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.settimeout(0.5)
+        return probe.connect_ex((host, port)) == 0
+
+
 def _load_app_css() -> str:
     return resource_path("src/webapp/styles.css").read_text(encoding="utf-8")
 
@@ -40,10 +51,10 @@ def _load_app_css() -> str:
 def build_about_html() -> str:
     """Return the user-facing About block."""
     return f"""
-    <div class="cia-card" style="margin-top:16px;">
+    <div class="cia-about-card">
         <h3>About</h3>
         <p><strong>Clinical Image Anonymizer</strong></p>
-        <p><strong>Version:</strong> {APP_VERSION}</p>
+        <p><strong>Version:</strong> 1.0.0</p>
         <p><strong>Author:</strong> {APP_AUTHOR}</p>
         <p><strong>Organization:</strong> {APP_ORGANIZATION}</p>
         <p><strong>Repository:</strong> <a href="{APP_REPOSITORY}" target="_blank">{APP_REPOSITORY}</a></p>
@@ -60,16 +71,8 @@ def build_app() -> gr.Blocks:
 
     with gr.Blocks(title=APP_TITLE, css=_load_app_css()) as demo:
         gr.Markdown(f"# {APP_TITLE}", elem_classes=["cia-title"])
-        gr.Markdown(f"Version {APP_VERSION}", elem_classes=["cia-subtitle"])
-        gr.Markdown(APP_SUBTITLE, elem_classes=["cia-subtitle"])
-        gr.Markdown(
-            f"Author: {APP_AUTHOR} · {APP_ORGANIZATION}",
-            elem_classes=["cia-subtitle"],
-        )
-
-        build_main_layout()
-
         gr.HTML(build_about_html())
+        build_main_layout()
 
     return demo
 
@@ -77,10 +80,14 @@ def build_app() -> gr.Blocks:
 def main() -> None:
     ensure_standard_streams()
 
+    if is_port_in_use(SERVER_HOST, SERVER_PORT):
+        webbrowser.open(LOCAL_URL)
+        return
+
     app = build_app()
     app.launch(
-        server_name="127.0.0.1",
-        server_port=7860,
+        server_name=SERVER_HOST,
+        server_port=SERVER_PORT,
         favicon_path=str(resource_path("assets/icons/clinical_image_anonymizer.ico")),
         inbrowser=True,
     )
