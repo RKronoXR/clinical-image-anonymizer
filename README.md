@@ -234,15 +234,17 @@ Main documentation pages:
 | [`docs/build_installer.md`](docs/build_installer.md) | Build PyInstaller executables and Inno Setup installer |
 | [`docs/rest_api.md`](docs/rest_api.md) | REST API usage, LAN notes, and safety guidance |
 | [`docs/developer_guide.md`](docs/developer_guide.md) | Clone, environment setup, testing, and source-code development |
+| [`docs/software_engineering_diagrams.md`](docs/software_engineering_diagrams.md) | Software engineering diagrams: architecture, use cases, sequences, deployment, and release flow |
 | [`docs/future_features.md`](docs/future_features.md) | Planned future features |
 | [`docs/legal_and_citation.md`](docs/legal_and_citation.md) | License, citation, and disclaimer guidance |
+| [`scripts/maintenance/README.md`](scripts/maintenance/README.md) | Maintenance scripts for repository audit, cleanup, installer inspection, and metadata inspection |
 
 Additional root documentation:
 
 | Document | Purpose |
 |---|---|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Architecture overview |
-| [`TESTING.md`](TESTING.md) | Testing notes |
+| [`TESTING.md`](TESTING.md) | Automated tests, manual smoke tests, installer tests, and release testing checklist |
 | [`PRIVACY_AND_DATA_POLICY.md`](PRIVACY_AND_DATA_POLICY.md) | Privacy and data handling policy |
 | [`CHANGELOG.md`](CHANGELOG.md) | Change history |
 | [`DISCLAIMER.md`](DISCLAIMER.md) | Full disclaimer |
@@ -264,6 +266,7 @@ src/
 
 tests/                  automated tests
 docs/                   user, developer, installer, and API documentation
+scripts/maintenance/    repository audit, cleanup, and inspection scripts
 installer/              Inno Setup installer script
 ```
 
@@ -292,6 +295,48 @@ pyinstaller --noconfirm clinical_image_anonymizer.spec
 pyinstaller --noconfirm clinical_image_anonymizer_cli.spec
 
 & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\installer\clinical_image_anonymizer.iss
+```
+
+---
+
+## Testing
+
+Run the full automated test suite:
+
+```powershell
+python -m pytest
+```
+
+For detailed testing guidance, including API, GUI, CLI, installer, manual smoke tests, and release testing, see:
+
+```text
+TESTING.md
+```
+
+---
+
+## Maintenance
+
+Maintenance scripts are available under:
+
+```text
+scripts/maintenance/
+```
+
+Examples:
+
+```powershell
+.\scripts\maintenance\repo_audit.ps1
+.\scripts\maintenance\safe_cleanup.ps1
+.\scripts\maintenance\safe_cleanup.ps1 -Apply
+.\scripts\maintenance\inspect_installer_sources.ps1
+.\scripts\maintenance\inspect_metadata_sources.ps1
+```
+
+For details, see:
+
+```text
+scripts/maintenance/README.md
 ```
 
 ---
