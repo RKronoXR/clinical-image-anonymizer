@@ -27,6 +27,14 @@ def _workspace_upload_inputs(components: UIComponents, file_component: Any) -> l
     ]
 
 
+def _append_about_group_if_available(
+    outputs: list[Any],
+    components: UIComponents,
+) -> None:
+    if components.about_group is not None:
+        outputs.append(components.about_group)
+
+
 def _workspace_upload_outputs(
     components: UIComponents,
     *,
@@ -37,20 +45,27 @@ def _workspace_upload_outputs(
         components.state.rectangle_state,
         components.state.batch_index_state,
         components.upload.initial_upload_group,
-        components.export.export_group,
-        components.viewer.viewer_group,
-        components.metadata.current_metadata_html,
-        components.rectangle.rectangle_selector,
-        components.rectangle.apply_all_images_checkbox,
-        components.rectangle.x_input,
-        components.rectangle.y_input,
-        components.rectangle.width_input,
-        components.rectangle.height_input,
-        components.rectangle.rectangles_json,
-        *components.viewer.preview_outputs,
-        components.viewer.batch_position,
-        *components.viewer.navigation_buttons,
     ]
+
+    _append_about_group_if_available(outputs, components)
+
+    outputs.extend(
+        [
+            components.export.export_group,
+            components.viewer.viewer_group,
+            components.metadata.current_metadata_html,
+            components.rectangle.rectangle_selector,
+            components.rectangle.apply_all_images_checkbox,
+            components.rectangle.x_input,
+            components.rectangle.y_input,
+            components.rectangle.width_input,
+            components.rectangle.height_input,
+            components.rectangle.rectangles_json,
+            *components.viewer.preview_outputs,
+            components.viewer.batch_position,
+            *components.viewer.navigation_buttons,
+        ]
+    )
 
     if include_side_upload:
         outputs.append(components.upload.side_batch_files)
@@ -69,21 +84,28 @@ def _clear_upload_outputs(
         components.state.rectangle_state,
         components.state.batch_index_state,
         components.upload.initial_upload_group,
-        components.export.export_group,
-        components.viewer.viewer_group,
-        components.metadata.current_metadata_html,
-        components.rectangle.rectangle_selector,
-        components.rectangle.apply_all_images_checkbox,
-        components.rectangle.x_input,
-        components.rectangle.y_input,
-        components.rectangle.width_input,
-        components.rectangle.height_input,
-        components.rectangle.rectangles_json,
-        *components.viewer.preview_outputs,
-        components.viewer.batch_position,
-        *components.viewer.navigation_buttons,
-        components.upload.initial_batch_files,
     ]
+
+    _append_about_group_if_available(outputs, components)
+
+    outputs.extend(
+        [
+            components.export.export_group,
+            components.viewer.viewer_group,
+            components.metadata.current_metadata_html,
+            components.rectangle.rectangle_selector,
+            components.rectangle.apply_all_images_checkbox,
+            components.rectangle.x_input,
+            components.rectangle.y_input,
+            components.rectangle.width_input,
+            components.rectangle.height_input,
+            components.rectangle.rectangles_json,
+            *components.viewer.preview_outputs,
+            components.viewer.batch_position,
+            *components.viewer.navigation_buttons,
+            components.upload.initial_batch_files,
+        ]
+    )
 
     if include_side_upload:
         outputs.append(components.upload.side_batch_files)

@@ -289,3 +289,16 @@ input[type="number"]::-webkit-inner-spin-button {
     margin-top: 0.35rem !important;
     margin-bottom: 0.35rem !important;
 }
+
+
+.cia-top-action-row {
+    width: var(--cia-initial-upload-width) !important;
+    max-width: var(--cia-initial-upload-width) !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+}
+
+.cia-exit-status {
+    color: var(--cia-muted) !important;
+    font-size: 0.9rem !important;
+}

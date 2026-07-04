@@ -191,6 +191,7 @@ def handle_workspace_upload(
         updated_rectangles,
         index,
         gr.update(visible=not has_files),
+        gr.update(visible=not has_files),
         gr.update(visible=has_files),
         gr.update(visible=has_files),
         gr.update(visible=has_files, value=metadata_html),
@@ -216,6 +217,7 @@ def handle_clear_upload():
         [],
         [],
         0,
+        gr.update(visible=True),
         gr.update(visible=True),
         gr.update(visible=False),
         gr.update(visible=False),
@@ -456,7 +458,7 @@ def handle_delete_rectangle(
     )
 
 
-def build_main_layout():
+def build_main_layout(about_group=None):
     state_components = StateComponents(
         files_state=gr.State([]),
         rectangle_state=gr.State([]),
@@ -474,6 +476,7 @@ def build_main_layout():
         initial_upload_components=initial_upload_components,
         export_components=export_components,
         workspace_components=workspace_components,
+        about_group=about_group,
     )
 
     register_callbacks(
