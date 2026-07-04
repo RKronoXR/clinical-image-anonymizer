@@ -1,9 +1,9 @@
 # Apply Instructions
 
-Copy this file over the repository root:
+Replace:
 
 ```text
-src/webapp/app.py
+src/webapp/event_registry.py
 ```
 
 Then run:
@@ -12,17 +12,19 @@ Then run:
 cd C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer
 
 python -m pytest
-
-Remove-Item build, dist -Recurse -Force -ErrorAction SilentlyContinue
-pyinstaller --noconfirm clinical_image_anonymizer.spec
-pyinstaller --noconfirm clinical_image_anonymizer_cli.spec
-
-.\dist\"Clinical Image Anonymizer"\"Clinical Image Anonymizer.exe"
+python -m src.webapp.app
 ```
 
-If it works:
+Manual check:
+
+1. Load images.
+2. Add a rectangle.
+3. Remove one image using the `x` in the upload list.
+4. Confirm the UI does not enter an infinite reload loop.
+
+Commit:
 
 ```powershell
-git add src/webapp/app.py
-git commit -m "fix(webapp): support PyInstaller without console"
+git add src/webapp/event_registry.py
+git commit -m "fix(webapp): prevent file list update loop"
 ```
