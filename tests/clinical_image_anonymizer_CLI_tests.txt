@@ -1,0 +1,209 @@
+Clinical Image Anonymizer - CLI Demo and Test Checklist
+Version: demo/testing notes
+Platform: Windows PowerShell
+Project path:
+C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer
+
+Goal
+Verify that the packaged CLI executable runs, shows help, handles invalid inputs, and can anonymize demo images without using private clinical data.
+
+Important
+Use only synthetic or already anonymized demo images during the demo.
+Do not use private clinical images in screenshots, public recordings, or shared files.
+
+------------------------------------------------------------
+0. Open PowerShell and go to the project
+------------------------------------------------------------
+
+cd C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer
+.venv\Scripts\activate
+
+------------------------------------------------------------
+1. Verify that the CLI executable exists
+------------------------------------------------------------
+
+Test-Path .\dist\clinical-image-anonymizer.exe
+dir .\dist\clinical-image-anonymizer.exe
+
+Expected:
+True
+The file details are shown.
+
+------------------------------------------------------------
+2. Show CLI help
+------------------------------------------------------------
+
+.\dist\clinical-image-anonymizer.exe --help
+
+Expected:
+The CLI prints available commands/options.
+
+Save the help output:
+
+.\dist\clinical-image-anonymizer.exe --help > cli_help_output.txt
+notepad cli_help_output.txt
+
+------------------------------------------------------------
+3. Create synthetic demo images
+------------------------------------------------------------
+
+This avoids using private clinical data.
+
+python - <<'PY'
+from pathlib import Path
+from PIL import Image, ImageDraw
+
+input_dir = Path("data/demo_cli_input")
+input_dir.mkdir(parents=True, exist_ok=True)
+
+for i in range(1, 4):
+    img = Image.new("RGB", (600, 400), "white")
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((40, 40, 560, 360), outline="gray", width=3)
+    draw.text((60, 70), f"SYNTHETIC DEMO IMAGE {i}", fill="black")
+    draw.text((60, 110), "VISIBLE ID: DEMO_PATIENT_123", fill="black")
+    draw.text((60, 150), "This is not real patient data.", fill="black")
+    img.save(input_dir / f"demo_image_{i:02d}.png")
+print(f"Created synthetic images in: {input_dir.resolve()}")
+PY
+
+Check:
+
+dir data\demo_cli_input
+
+Expected:
+demo_image_01.png
+demo_image_02.png
+demo_image_03.png
+
+------------------------------------------------------------
+4. Prepare output folders
+------------------------------------------------------------
+
+Remove-Item -Recurse -Force outputs\demo_cli_single -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force outputs\demo_cli_batch -ErrorAction SilentlyContinue
+mkdir outputs\demo_cli_single
+mkdir outputs\demo_cli_batch
+
+------------------------------------------------------------
+5. CLI test: invalid input should fail clearly
+------------------------------------------------------------
+
+.\dist\clinical-image-anonymizer.exe --input "data\does_not_exist" --output "outputs\demo_cli_invalid"
+
+Expected:
+The CLI should show a clear error.
+This is a negative test, so failure is expected.
+The important point is that the error is understandable.
+
+Note:
+If your CLI uses different option names, run --help and adjust the command.
+
+------------------------------------------------------------
+6. CLI test: anonymize one image
+------------------------------------------------------------
+
+Example command, adjust flags according to --help if needed:
+
+.\dist\clinical-image-anonymizer.exe `
+  --input "data\demo_cli_input\demo_image_01.png" `
+  --output "outputs\demo_cli_single" `
+  --prefix "Anon_" `
+  --rectangle "50,90,420,140" `
+  --color "0,0,0"
+
+Expected:
+An anonymized image is created in outputs\demo_cli_single.
+The visible ID region is blacked out.
+Metadata should be removed or minimized.
+
+Check:
+
+dir outputs\demo_cli_single
+
+------------------------------------------------------------
+7. CLI test: anonymize a batch
+------------------------------------------------------------
+
+Example command, adjust flags according to --help if needed:
+
+.\dist\clinical-image-anonymizer.exe `
+  --input "data\demo_cli_input" `
+  --output "outputs\demo_cli_batch" `
+  --prefix "Anon_" `
+  --rectangle "50,90,420,140" `
+  --color "0,0,0"
+
+Expected:
+All synthetic images are exported to outputs\demo_cli_batch.
+Files should have anonymized names.
+A mapping CSV may be created if supported.
+
+Check:
+
+dir outputs\demo_cli_batch
+
+------------------------------------------------------------
+8. CLI test: randomize output order if supported
+------------------------------------------------------------
+
+Only run this if --help shows a randomize option.
+
+Remove-Item -Recurse -Force outputs\demo_cli_randomized -ErrorAction SilentlyContinue
+mkdir outputs\demo_cli_randomized
+
+.\dist\clinical-image-anonymizer.exe `
+  --input "data\demo_cli_input" `
+  --output "outputs\demo_cli_randomized" `
+  --prefix "Rand_" `
+  --randomize `
+  --rectangle "50,90,420,140" `
+  --color "0,0,0"
+
+Expected:
+All images are exported.
+Output order/name mapping may differ from the original order.
+
+------------------------------------------------------------
+9. CLI test: no rectangle, metadata-only anonymization
+------------------------------------------------------------
+
+Remove-Item -Recurse -Force outputs\demo_cli_metadata_only -ErrorAction SilentlyContinue
+mkdir outputs\demo_cli_metadata_only
+
+.\dist\clinical-image-anonymizer.exe `
+  --input "data\demo_cli_input" `
+  --output "outputs\demo_cli_metadata_only" `
+  --prefix "MetaOnly_"
+
+Expected:
+Images are exported.
+Visible text remains because no rectangle censoring was applied.
+Metadata should still be removed or minimized.
+
+------------------------------------------------------------
+10. Demo talking points
+------------------------------------------------------------
+
+Say:
+1. The CLI is useful for technical users and batch processing.
+2. It can run locally without uploading sensitive images.
+3. Rectangles can censor burned-in identifiers.
+4. Metadata anonymization and pixel censoring are separate privacy layers.
+5. Synthetic data is used in this demo to avoid exposing private clinical data.
+
+------------------------------------------------------------
+11. Troubleshooting
+------------------------------------------------------------
+
+If the CLI executable is missing:
+python -m PyInstaller --clean --noconfirm clinical_image_anonymizer_cli.spec
+
+If the command options differ:
+.\dist\clinical-image-anonymizer.exe --help
+
+If output is not created:
+Check the input path, output path, and rectangle syntax.
+
+If Windows blocks the exe:
+Right-click the exe > Properties > Unblock, if shown.

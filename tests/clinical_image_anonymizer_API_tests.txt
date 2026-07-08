@@ -1,0 +1,240 @@
+Clinical Image Anonymizer - REST API Demo and Test Instructions
+Version: demo/testing notes
+Platform: Windows PowerShell
+Project path:
+C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer
+
+Goal
+Verify that the REST API can start locally, expose documentation, provide OpenAPI metadata, and run anonymization endpoints when available.
+
+Important
+Use only synthetic or already anonymized demo images during the demo.
+Do not expose private clinical images through public screenshots, recordings, or shared logs.
+Run the API on localhost by default:
+127.0.0.1
+
+------------------------------------------------------------
+0. Open PowerShell and go to the project
+------------------------------------------------------------
+
+cd C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer
+.venv\Scripts\activate
+
+------------------------------------------------------------
+1. Verify that the API executable exists
+------------------------------------------------------------
+
+Test-Path .\dist\clinical-image-anonymizer-api.exe
+dir .\dist\clinical-image-anonymizer-api.exe
+
+Expected:
+True
+The file details are shown.
+
+If the API executable is missing, build it:
+
+python -m PyInstaller --clean --noconfirm clinical_image_anonymizer_api.spec
+
+------------------------------------------------------------
+2. Show API launcher help
+------------------------------------------------------------
+
+.\dist\clinical-image-anonymizer-api.exe --help
+
+Expected:
+The command shows options like:
+--host
+--port
+--reload
+
+------------------------------------------------------------
+3. Start the API in a separate PowerShell window
+------------------------------------------------------------
+
+Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd C:\Users\rga580\KronoX-Projects\clinical-image-anonymizer; .\dist\clinical-image-anonymizer-api.exe --host 127.0.0.1 --port 8000'
+
+Expected:
+A new PowerShell window opens.
+The API starts on:
+http://127.0.0.1:8000
+
+Keep that window open while testing.
+
+------------------------------------------------------------
+4. Open interactive API docs
+------------------------------------------------------------
+
+Open this in a browser:
+
+http://127.0.0.1:8000/docs
+
+Expected:
+Swagger UI opens.
+You can see available endpoints.
+
+Alternative docs, if available:
+
+http://127.0.0.1:8000/redoc
+
+------------------------------------------------------------
+5. Test OpenAPI JSON
+------------------------------------------------------------
+
+In the original PowerShell window:
+
+Invoke-RestMethod http://127.0.0.1:8000/openapi.json
+
+Expected:
+A JSON object with API metadata.
+
+Save it:
+
+Invoke-RestMethod http://127.0.0.1:8000/openapi.json | ConvertTo-Json -Depth 20 > api_openapi.json
+notepad api_openapi.json
+
+------------------------------------------------------------
+6. List available API endpoints automatically
+------------------------------------------------------------
+
+$openapi = Invoke-RestMethod http://127.0.0.1:8000/openapi.json
+$openapi.paths.PSObject.Properties.Name
+
+Expected:
+PowerShell prints the available API paths.
+
+Show methods per endpoint:
+
+$openapi.paths.PSObject.Properties | ForEach-Object {
+    $path = $_.Name
+    $_.Value.PSObject.Properties.Name | ForEach-Object {
+        "$($_.ToUpper()) $path"
+    }
+}
+
+Expected:
+A list such as:
+GET /...
+POST /...
+
+------------------------------------------------------------
+7. Test common health endpoints if present
+------------------------------------------------------------
+
+Only run the endpoint that appears in your OpenAPI list.
+
+Invoke-RestMethod http://127.0.0.1:8000/health
+Invoke-RestMethod http://127.0.0.1:8000/api/health
+
+Expected:
+A simple OK/status response if the endpoint exists.
+If it returns 404, that endpoint is not implemented. That is not a packaging failure.
+
+------------------------------------------------------------
+8. Create synthetic image for API tests
+------------------------------------------------------------
+
+python - <<'PY'
+from pathlib import Path
+from PIL import Image, ImageDraw
+
+input_dir = Path("data/demo_api_input")
+input_dir.mkdir(parents=True, exist_ok=True)
+
+img = Image.new("RGB", (600, 400), "white")
+draw = ImageDraw.Draw(img)
+draw.rectangle((40, 40, 560, 360), outline="gray", width=3)
+draw.text((60, 70), "SYNTHETIC API DEMO IMAGE", fill="black")
+draw.text((60, 110), "VISIBLE ID: DEMO_PATIENT_API_123", fill="black")
+draw.text((60, 150), "This is not real patient data.", fill="black")
+img.save(input_dir / "demo_api_image.png")
+print(f"Created: {(input_dir / 'demo_api_image.png').resolve()}")
+PY
+
+------------------------------------------------------------
+9. Test an anonymization endpoint from Swagger UI
+------------------------------------------------------------
+
+Use this when the API docs show a POST anonymization endpoint.
+
+Steps:
+1. Open http://127.0.0.1:8000/docs
+2. Find the endpoint related to anonymization/export/metadata.
+3. Click Try it out.
+4. Use the synthetic file:
+   data\demo_api_input\demo_api_image.png
+5. Use output folder:
+   outputs\demo_api_output
+6. Use rectangle:
+   x1=50, y1=90, x2=420, y2=140
+7. Use color:
+   0,0,0
+8. Execute.
+
+Expected:
+The API returns success.
+An anonymized output file is created.
+The visible ID region is blacked out.
+
+------------------------------------------------------------
+10. Example curl-style request
+------------------------------------------------------------
+
+Because the exact endpoint schema can vary, first confirm the endpoint and payload in:
+http://127.0.0.1:8000/docs
+
+Example pattern only:
+
+curl -X POST "http://127.0.0.1:8000/<endpoint-from-docs>" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"input_path\":\"data/demo_api_input/demo_api_image.png\",\"output_dir\":\"outputs/demo_api_output\",\"rectangles\":[{\"x1\":50,\"y1\":90,\"x2\":420,\"y2\":140}],\"color\":[0,0,0]}"
+
+Expected:
+A JSON response indicating success.
+
+------------------------------------------------------------
+11. Stop the API
+------------------------------------------------------------
+
+Go to the PowerShell window running the API and press:
+
+Ctrl + C
+
+Expected:
+The API stops.
+
+------------------------------------------------------------
+12. Demo talking points
+------------------------------------------------------------
+
+Say:
+1. The REST API is useful for integration with other systems.
+2. It runs locally by default, so images do not leave the computer.
+3. Swagger UI provides interactive testing.
+4. OpenAPI JSON makes the API machine-readable.
+5. Synthetic data is used in the demo to avoid exposing private clinical data.
+
+------------------------------------------------------------
+13. Troubleshooting
+------------------------------------------------------------
+
+If port 8000 is busy:
+.\dist\clinical-image-anonymizer-api.exe --host 127.0.0.1 --port 8001
+
+Then use:
+http://127.0.0.1:8001/docs
+
+If the API executable is missing:
+python -m PyInstaller --clean --noconfirm clinical_image_anonymizer_api.spec
+
+If /docs does not open:
+Check whether the API window shows an error.
+Check Windows Firewall prompt.
+Try http://localhost:8000/docs
+
+If an endpoint returns 422:
+The request body does not match the schema.
+Use Swagger UI to inspect the required fields.
+
+If an endpoint returns 404:
+The path does not exist.
+List available endpoints with /openapi.json.

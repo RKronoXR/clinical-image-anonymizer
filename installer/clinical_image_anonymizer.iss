@@ -1,8 +1,9 @@
 #define AppName "Clinical Image Anonymizer"
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 #define AppPublisher "ACTA AI Lab"
 #define AppExeName "Clinical Image Anonymizer.exe"
 #define CliExeName "clinical-image-anonymizer.exe"
+#define ApiExeName "clinical-image-anonymizer-api.exe"
 
 [Setup]
 AppName={#AppName}
@@ -14,7 +15,7 @@ AppUpdatesURL=https://github.com/RKronoXR/clinical-image-anonymizer/releases
 DefaultDirName={autopf}\Clinical Image Anonymizer
 DefaultGroupName=Clinical Image Anonymizer
 OutputDir=..\dist\installer
-OutputBaseFilename=ClinicalImageAnonymizerSetup_v1.0.0
+OutputBaseFilename=ClinicalImageAnonymizerSetup_v1.0.1
 SetupIconFile=..\assets\icons\clinical_image_anonymizer.ico
 Compression=lzma
 SolidCompression=yes
@@ -30,14 +31,17 @@ VersionInfoVersion={#AppVersion}
 [Files]
 Source: "..\dist\Clinical Image Anonymizer\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\dist\clinical-image-anonymizer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\clinical-image-anonymizer-api.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional icons:"
-Name: "addtopath"; Description: "Add Clinical Image Anonymizer CLI to the user PATH"; GroupDescription: "Command-line interface:"; Flags: checkedonce
+Name: "addtopath"; Description: "Add Clinical Image Anonymizer CLI/API to the user PATH"; GroupDescription: "Command-line tools:"; Flags: checkedonce
 
 [Icons]
-Name: "{group}\Clinical Image Anonymizer"; Filename: "{app}\{#AppExeName}"
+Name: "{group}\Clinical Image Anonymizer GUI"; Filename: "{app}\{#AppExeName}"
 Name: "{group}\Clinical Image Anonymizer CLI Help"; Filename: "{cmd}"; Parameters: "/K ""{app}\{#CliExeName}"" --help"
+Name: "{group}\Clinical Image Anonymizer REST API"; Filename: "{cmd}"; Parameters: "/K ""{app}\{#ApiExeName}"" --host 127.0.0.1 --port 8000"
+Name: "{group}\REST API Docs"; Filename: "http://127.0.0.1:8000/docs"
 Name: "{autodesktop}\Clinical Image Anonymizer"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Registry]
